@@ -1,0 +1,11 @@
+import testing ;
+
+project :
+    requirements
+        <toolset>gcc:<cxxflags>"-pedantic -Wall -Wextra"
+;
+
+for local source in [ glob *.cpp ]
+{
+    run $(source) ;
+}
