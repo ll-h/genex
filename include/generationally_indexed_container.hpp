@@ -13,6 +13,11 @@ bool is_valid(G&& generation) {
     return generation%2 == 0;
 }
 
+template<typename G>
+bool is_valid(G const & generation) {
+    return generation%2 == 0;
+}
+
 template<typename Index = size_t, typename Generation = size_t>
 class key {
 public:
@@ -21,22 +26,27 @@ public:
         generation(std::forward<Generation>(gen))
     {}
 
+    key(Index const & index, Generation const & gen) :
+        index(index),
+        generation(gen)
+    {}
+
     bool is_valid() const {
-        return genex::is_valid(std::forward<Generation>(generation));
+        return genex::is_valid(generation);
     }
 
-    void increase_generation() {
-        ++generation;
+    Generation const & get_generation() const {
+        return generation;
     }
 
-    Index const & get_index() {
+    Index const & get_index() const {
         return index;
     }
 
 private:
     Index index;
 
-    // even for empty keys
+    // even for empty keys, odd for keys of living objects
     Generation generation;
 };
 
@@ -48,7 +58,7 @@ public:
     }
 
     template<typename... Args>
-    manual_destruction_wrapper(Args&&... args) :
+    explicit manual_destruction_wrapper(Args&&... args) :
         storage(std::forward<Args>(args)...)
     {}
 
@@ -58,11 +68,15 @@ public:
     }
 
     void erase() {
-        storage.object.~T();
+        storage.object.T::~T();
     }
 
     operator T&() {
         return storage.object;
+    }
+
+    T * get_pointer() {
+        return &storage.object;
     }
 
 private:
@@ -71,7 +85,7 @@ private:
         char dummy;
 
         template<typename... Args>
-        storage_type(Args&&... args)
+        explicit storage_type(Args&&... args)
             : object(std::forward<Args>(args)...)
         {}
 
@@ -104,8 +118,8 @@ public:
     T* get(key_type const & k) {
         if (k.is_valid()) {
             auto idx = k.get_index();
-            if(k.generation == generations[idx]) {
-                return &objects[idx];
+            if(k.get_generation() == generations[idx]) {
+                return objects[idx].get_pointer();
             }
         }
 
@@ -113,17 +127,22 @@ public:
     }
 
     template<typename... Args>
-    key_type emplace(Args&&... args) {
+    [[nodiscard]] key_type emplace(Args&&... args) {
         if (free_indexes.empty()) {
             key_type k(objects.size());
-            objects.emplace(std::forward<Args>(args)...);
+            objects.emplace_back(std::forward<Args>(args)...);
             generations.push_back(k.get_generation());
             return k;
         }
         else {
             auto idx = free_indexes.back();
-            key_type k(idx, generations[idx] + 1);
+            auto & gen = generations[idx];
+            ++gen;
+            key_type k(idx, gen);
             objects[idx].emplace(std::forward<Args>(args)...);
+            free_indexes.pop_back();
+
+            return k;
         }
     }
 
@@ -131,7 +150,7 @@ public:
         if(k.is_valid()) {
             auto idx = k.get_index();
 
-            if(k.generation == generations[idx]) {
+            if(k.get_generation() == generations[idx]) {
                 unchecked_erasure(std::forward<Index>(idx));
             }
         }
