@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <utility>
-#include <optional>
+#include <algorithm>
 #include <vector>
 
 namespace genex {
@@ -90,6 +90,16 @@ public:
     using key_type = key<Index, Generation>;
 
     gic() {}
+
+    ~gic() {
+        // all living objects must be destroyed
+        Index const max = generations.size();
+        for(Index index = 0; index < max; ++index) {
+            if(genex::is_valid(generations[index])) {
+                objects[index].erase();
+            }
+        }
+    }
 
     T* get(key_type const & k) {
         if (k.is_valid()) {
