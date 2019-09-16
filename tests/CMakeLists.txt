@@ -13,6 +13,8 @@ function(target_name_from_file target_name file_name)
     set(${target_name} "${base_name}" PARENT_SCOPE)
 endfunction()
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 file(GLOB_RECURSE test_files "*.cpp")
 
 foreach(test_file IN LISTS test_files)
