@@ -13,7 +13,7 @@ struct set_to_1_upon_destruction {
     }
 };
 
-void identity(int& val) {
+static void identity(int& val) {
     manual_destruction_wrapper<set_to_1_upon_destruction> wrap(std::forward<int&>(val));
 
     // RAII deletes wrap which is not supposed to delete the value wrapped
