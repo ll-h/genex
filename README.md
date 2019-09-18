@@ -14,10 +14,16 @@ The test cases are the perfect user-friendly documentation.
 ## Installation (Work in progress)
 Copy-paste the content of the _include_ folder where you want to use this library.
 
+## Testing
+```shell
+cmake .
+make check
+```
+
 ## Missing Features
 Loosely ordered by priority:
 - Clean installation and use as a CMake module
 - Iterator over the elements
 - Actual documentation
 - Embedding the free indexes within the freed objects as a singly-linked list
-- Testing for weird types (non-copiabe, non-movable, ...)
+- Testing for weird types (non-copyabe, non-movable, ...)
