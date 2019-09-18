@@ -13,9 +13,6 @@ struct set_to_0_upon_destruction {
     }
 };
 
-void set_to_0(int & val) {
-}
-
 int main() {
     int ret = 1;
 

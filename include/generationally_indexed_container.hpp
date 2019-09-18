@@ -102,6 +102,7 @@ template<typename T,
 class gic {
 public:
     using key_type = key<Index, Generation>;
+    using element_access_type = T*;
 
     gic() {}
 
@@ -115,7 +116,7 @@ public:
         }
     }
 
-    T* get(key_type const & k) {
+    element_access_type get(key_type const & k) {
         if (k.is_valid()) {
             auto idx = k.get_index();
             if(k.get_generation() == generations[idx]) {
@@ -124,6 +125,10 @@ public:
         }
 
         return nullptr;
+    }
+
+    element_access_type operator [](key_type const & k) {
+        return get(k);
     }
 
     template<typename... Args>

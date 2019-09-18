@@ -15,7 +15,7 @@ endfunction()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-file(GLOB_RECURSE test_files "*.cpp")
+file(GLOB test_files "*.cpp")
 
 foreach(test_file IN LISTS test_files)
     target_name_from_file(target "${test_file}")
