@@ -10,7 +10,7 @@ endfunction()
 function(target_name_from_file target_name file_name)
     string(REGEX REPLACE ".*/" "" base_name ${file_name})
     string(REPLACE ".cpp" "" base_name "${base_name}")
-    set(${target_name} "${base_name}" PARENT_SCOPE)
+    set(${target_name} "${base_name}.exe" PARENT_SCOPE)
 endfunction()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
