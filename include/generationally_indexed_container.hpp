@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <functional>
 #include <algorithm>
 #include <vector>
 
@@ -79,6 +80,10 @@ public:
         return &storage.object;
     }
 
+    T const * get_pointer() const {
+        return &storage.object;
+    }
+
 private:
     union storage_type {
         T object;
@@ -102,7 +107,9 @@ template<typename T,
 class gic {
 public:
     using key_type = key<Index, Generation>;
+    using wrapped_type = manual_destruction_wrapper<T>;
     using element_access_type = T*;
+    using element_const_access_type = T const *;
 
     gic() {}
 
@@ -116,19 +123,32 @@ public:
         }
     }
 
-    element_access_type get(key_type const & k) {
-        if (k.is_valid()) {
-            auto idx = k.get_index();
-            if(k.get_generation() == generations[idx]) {
-                return objects[idx].get_pointer();
-            }
-        }
+    [[nodiscard]] element_access_type
+    get(key_type const & k) {
+        return internal_get(*this, k);
+    }
 
+    [[nodiscard]] element_const_access_type
+    get(key_type const & k) const {
+        return internal_get(*this, k);
+    }
+
+    [[nodiscard]] element_access_type
+    operator [](key_type const & k) {
+        return get(k);
+    }
+
+    [[nodiscard]] element_const_access_type
+    operator [](key_type const & k) const {
+        return get(k);
+    }
+
+    [[nodiscard]] element_access_type failed_get() {
         return nullptr;
     }
 
-    element_access_type operator [](key_type const & k) {
-        return get(k);
+    [[nodiscard]] element_const_access_type failed_get() const {
+        return nullptr;
     }
 
     template<typename... Args>
@@ -168,7 +188,7 @@ public:
     }
 
 private:
-    ObjectContainer<manual_destruction_wrapper<T>> objects;
+    ObjectContainer<wrapped_type> objects;
     GenerationContainer generations;
     IndexContainer free_indexes;
 
@@ -176,6 +196,24 @@ private:
         ++generations[idx];
         objects[idx].erase();
         free_indexes.push_back(idx);
+    }
+
+    // This is clearly overkill, I just wanted to see if I could write
+    // the logic of this function only once instead of once for const
+    // this and once for non-const this
+    template<class Self>
+    friend auto internal_get(
+            Self&& self,
+            key_type const & k)
+    {
+        if (k.is_valid()) {
+            auto idx = k.get_index();
+            if(k.get_generation() == self.generations[idx]) {
+                return self.objects[idx].get_pointer();
+            }
+        }
+
+        return self.failed_get();
     }
 };
 
