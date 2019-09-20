@@ -11,6 +11,7 @@ int main() {
     auto old_key = container.emplace(OLD_VAL);
     container.remove(old_key);
     auto new_key = container.emplace(NEW_VAL);
+    (void)new_key;
     int * maybe_val = container.get(old_key);
 
     if(maybe_val == nullptr)

@@ -16,6 +16,7 @@ struct set_to_0_upon_destruction {
 static void set_to_0(int & val) {
     gic<set_to_0_upon_destruction> container;
     auto __ = container.emplace(val);
+    (void)__;
 }
 
 int main() {

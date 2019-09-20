@@ -2,7 +2,9 @@ import testing ;
 
 project :
     requirements
-        <toolset>gcc:<cxxflags>"-pedantic -Wall -Wextra"
+        <include>../include
+        <variant>debug
+        <toolset>gcc:<cxxflags>"-std=c++17 -pedantic -Wall -Wextra"
 ;
 
 for local source in [ glob *.cpp ]
