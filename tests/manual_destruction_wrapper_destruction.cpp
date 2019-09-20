@@ -1,4 +1,4 @@
-#include "generationally_indexed_container.hpp"
+#include "manually_destructed.hpp"
 #include <utility>
 
 using namespace genex;
@@ -14,7 +14,7 @@ struct set_to_1_upon_destruction {
 };
 
 static void identity(int& val) {
-    manual_destruction_wrapper<set_to_1_upon_destruction> wrap(std::forward<int&>(val));
+    manually_destructed<set_to_1_upon_destruction> wrap(std::forward<int&>(val));
 
     // RAII deletes wrap which is not supposed to delete the value wrapped
 }

@@ -8,7 +8,9 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE include/)
 target_sources(${PROJECT_NAME} INTERFACE
-    include/generationally_indexed_container.hpp)
+    include/generationally_indexed_container.hpp
+    include/manually_destructed.hpp
+)
 
 enable_testing()
 

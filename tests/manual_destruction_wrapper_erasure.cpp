@@ -1,4 +1,4 @@
-#include "generationally_indexed_container.hpp"
+#include "manually_destructed.hpp"
 #include <utility>
 
 using namespace genex;
@@ -15,7 +15,7 @@ struct set_to_0_upon_destruction {
 
 int main() {
     int ret = 1;
-    manual_destruction_wrapper<set_to_0_upon_destruction> wrap(std::forward<int&>(ret));
+    manually_destructed<set_to_0_upon_destruction> wrap(std::forward<int&>(ret));
     wrap.erase();
     return ret;
 }

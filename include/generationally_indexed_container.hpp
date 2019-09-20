@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "manually_destructed.hpp"
+
 namespace genex {
 
 template<typename G>
@@ -51,53 +53,6 @@ private:
     Generation generation;
 };
 
-template<typename T>
-class manual_destruction_wrapper {
-public:
-    ~manual_destruction_wrapper() {
-        // object is not destroyed
-    }
-
-    template<typename... Args>
-    explicit manual_destruction_wrapper(Args&&... args) :
-        storage(std::forward<Args>(args)...)
-    {}
-
-    template<typename... Args>
-    void emplace(Args&&... args) {
-        ::new (&storage.object) T(std::forward<Args>(args)...);
-    }
-
-    void erase() {
-        storage.object.T::~T();
-    }
-
-    operator T&() {
-        return storage.object;
-    }
-
-    T * get_pointer() {
-        return &storage.object;
-    }
-
-    T const * get_pointer() const {
-        return &storage.object;
-    }
-
-private:
-    union storage_type {
-        T object;
-        char dummy;
-
-        template<typename... Args>
-        explicit storage_type(Args&&... args)
-            : object(std::forward<Args>(args)...)
-        {}
-
-        ~storage_type() {}
-    } storage;
-};
-
 template<typename T,
          template<class> class ObjectContainer = std::vector,
          typename Index = size_t,
@@ -107,7 +62,7 @@ template<typename T,
 class gic {
 public:
     using key_type = key<Index, Generation>;
-    using wrapped_type = manual_destruction_wrapper<T>;
+    using wrapped_type = manually_destructed<T>;
     using element_access_type = T*;
     using element_const_access_type = T const *;
 
