@@ -1,0 +1,14 @@
+#include "generationally_indexed_container.hpp"
+
+int main() {
+    static int const VAL = 789;
+    genex::gic<int> container;
+    auto __ = container.emplace(VAL);
+
+    auto it = container.cbegin();
+    if (*it != VAL) {
+        return 1;
+    }
+
+    return 0;
+}
