@@ -10,18 +10,10 @@
 #include <type_traits>
 
 #include "manually_destructed.hpp"
+#include "element_validity_embedded_in_generation.hpp"
+#include "gic_iterator.hpp"
 
 namespace genex {
-
-template<typename G>
-bool is_valid(G&& generation) {
-    return generation%2 == 0;
-}
-
-template<typename G>
-bool is_valid(G const & generation) {
-    return generation%2 == 0;
-}
 
 template<typename Index = size_t, typename Generation = size_t>
 class key {
@@ -56,41 +48,6 @@ private:
 };
 
 
-namespace internal {
-template<bool is_const,
-         class T,
-         class GenerationContainer,
-         class WrappedObjectContainer>
-struct sub_iterator_types;
-
-template<class T,
-         class GenerationContainer,
-         class WrappedObjectContainer>
-struct sub_iterator_types<
-        true, T, GenerationContainer, WrappedObjectContainer>
-{
-    using gen_iter = typename GenerationContainer::const_iterator;
-    using obj_iter = typename WrappedObjectContainer::const_iterator;
-
-    using reference = T const&;
-    using pointer = T const*;
-};
-
-template<class T,
-         class GenerationContainer,
-         class WrappedObjectContainer>
-struct sub_iterator_types<
-        false, T, GenerationContainer, WrappedObjectContainer>
-{
-    using gen_iter = typename GenerationContainer::iterator;
-    using obj_iter = typename WrappedObjectContainer::iterator;
-
-    using reference = T&;
-    using pointer = T*;
-};
-
-} // end namespace internal
-
 template<typename T,
          template<class> class ObjectContainer = std::vector,
          typename Index = size_t,
@@ -101,8 +58,16 @@ class gic {
 public:
     using key_type = key<Index, Generation>;
     using wrapped_type = manually_destructed<T>;
+    using wrapped_object_constainer = ObjectContainer<wrapped_type>;
     using element_access_type = T*;
     using element_const_access_type = T const *;
+    using iterator = x_iterator<
+        typename GenerationContainer::iterator,
+        typename wrapped_object_constainer::iterator>;
+    using const_iterator = x_iterator<
+        typename GenerationContainer::const_iterator,
+        typename wrapped_object_constainer::const_iterator>;
+
 
     gic() {}
 
@@ -179,91 +144,6 @@ public:
             unchecked_erasure(std::forward<Index>(index));
         }
     }
-
-    template<bool is_const = false>
-    class x_iterator {
-    private:
-        using sub_iterator_types = internal::sub_iterator_types<
-            is_const, T, GenerationContainer, ObjectContainer<wrapped_type>>;
-        using gen_iter = typename sub_iterator_types::gen_iter;
-        using obj_iter = typename sub_iterator_types::obj_iter;
-
-        gen_iter gen_it;
-        const gen_iter end_gen_it;
-        obj_iter obj_it;
-
-        static constexpr bool assume_current_is_allocated = true;
-        static constexpr bool do_not_assume_current_is_allocated = false;
-
-        template<bool assume_current_is_allocated_v>
-        void advance_to_next_allocated() {
-            auto iteration_should_continue = [this] () {
-                return (gen_it != end_gen_it) && !genex::is_valid(*gen_it);
-            };
-
-            if constexpr (!assume_current_is_allocated_v) {
-                if (!iteration_should_continue())
-                    return;
-            }
-            do {
-                ++gen_it;
-                ++obj_it;
-            } while(iteration_should_continue());
-        }
-
-    public:
-        // ==== Iterator traits ====
-
-        using difference_type =
-            typename std::iterator_traits<obj_iter>::difference_type;
-        using value_type = T;
-        using reference = typename sub_iterator_types::reference;
-        using pointer = typename sub_iterator_types::pointer;
-        using iterator_category = std::conditional_t<
-            std::is_base_of_v<
-                typename gen_iter::iterator_category,
-                typename obj_iter::iterator_category>,
-            typename gen_iter::iterator_category,
-            typename obj_iter::iterator_category
-        >;
-
-        // custom constructor
-        x_iterator(gen_iter&& gi, gen_iter&& end_gi, obj_iter&& oi)
-            : gen_it(std::forward<gen_iter>(gi)),
-              end_gen_it(std::forward<gen_iter>(end_gi)),
-              obj_it(std::forward<obj_iter>(oi))
-        {
-            // initialize the iterator to an allocated object
-            advance_to_next_allocated<do_not_assume_current_is_allocated>();
-        }
-
-        // ==== Iterator concept functions ====
-
-        x_iterator(x_iterator const &it)
-            : gen_it(it.gen_it),
-              end_gen_it(it.end_gen_it),
-              obj_it(it.obj_it)
-        {}
-
-        x_iterator& operator=(x_iterator const &it) {
-            gen_it = it.gen_it;
-            end_gen_it = it.end_gen_it;
-            obj_it = it.obj_it;
-            return *this;
-        }
-
-        x_iterator& operator++() {
-            advance_to_next_allocated<assume_current_is_allocated>();
-            return *this;
-        }
-
-        reference operator*() const {
-            return *(obj_it->get_pointer());
-        }
-    };
-
-    using iterator = x_iterator<false>;
-    using const_iterator = x_iterator<true>;
 
     iterator begin() {
         return {

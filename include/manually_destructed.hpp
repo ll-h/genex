@@ -3,12 +3,14 @@
 
 #include <utility>
 #include <memory>
+#include <type_traits>
 
 namespace genex {
 
 template<typename T>
 class manually_destructed {
 public:
+    using value_type = T;
 
     template<typename... Args>
     explicit manually_destructed(Args&&... args) :
@@ -34,6 +36,17 @@ public:
 
     T const * get_pointer() const {
         return &storage.object;
+    }
+
+    template<class Self,
+             typename std::enable_if_t<
+                 std::is_same_v<
+                     std::remove_const_t<std::remove_reference_t<Self>>,
+                     manually_destructed<T>
+                 >, int> = 0>
+    friend decltype(auto) operator*(Self&& self) {
+        auto& ret = std::forward<Self>(self).storage.object;
+        return ret;
     }
 
 private:
