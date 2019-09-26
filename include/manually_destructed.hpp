@@ -21,7 +21,7 @@ public:
     }
 
     void erase() {
-        storage.object.T::~T();
+        std::destroy_at(&storage.object);
     }
 
     operator T&() {
