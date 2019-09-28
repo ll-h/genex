@@ -15,10 +15,13 @@
 
 namespace genex {
 
-template<typename Index = size_t, typename Generation = size_t>
+template<class Tag,
+         typename Index = size_t,
+         typename Generation = size_t,
+         Generation InitialGeneration = 0>
 class key {
 public:
-    key(Index&& index, Generation&& gen = 0) :
+    key(Index&& index, Generation&& gen = InitialGeneration) :
         index(std::forward<Index>(index)),
         generation(std::forward<Generation>(gen))
     {}
@@ -56,7 +59,7 @@ template<typename T,
          class GenerationContainer = std::vector<Generation>>
 class gic {
 public:
-    using key_type = key<Index, Generation>;
+    using key_type = key<T, Index, Generation>;
     using wrapped_type = manually_destructed<T>;
     using wrapped_object_constainer = ObjectContainer<wrapped_type>;
     using element_access_type = T*;
