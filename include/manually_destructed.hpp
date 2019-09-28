@@ -7,9 +7,10 @@
 
 namespace genex {
 
-template<typename T>
+template<typename T, typename WhenDestroyed = char>
 class manually_destructed {
 public:
+
     using value_type = T;
 
     template<typename... Args>
@@ -49,10 +50,14 @@ public:
         return ret;
     }
 
+    WhenDestroyed& destroyed_space() {
+        return storage.when_destroyed;
+    }
+
 private:
     union storage_type {
         T object;
-        char dummy;
+        WhenDestroyed when_destroyed;
 
         template<typename... Args>
         explicit storage_type(Args&&... args)
