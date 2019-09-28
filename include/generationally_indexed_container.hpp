@@ -31,10 +31,6 @@ public:
         generation(gen)
     {}
 
-    bool is_valid() const {
-        return genex::is_valid(generation);
-    }
-
     Generation const & get_generation() const {
         return generation;
     }
@@ -133,10 +129,11 @@ public:
     }
 
     void remove(key_type const & k) {
-        if(k.is_valid()) {
+        auto gen = k.get_generation();
+        if(genex::is_valid(gen)) {
             auto idx = k.get_index();
 
-            if(k.get_generation() == generations[idx]) {
+            if(gen == generations[idx]) {
                 unchecked_erasure(std::forward<Index>(idx));
             }
         }
@@ -187,9 +184,10 @@ private:
             Self&& self,
             key_type const & k)
     {
-        if (k.is_valid()) {
+        auto gen = k.get_generation();
+        if(genex::is_valid(gen)) {
             auto idx = k.get_index();
-            if(k.get_generation() == self.generations[idx]) {
+            if(gen == self.generations[idx]) {
                 return self.objects[idx].get_pointer();
             }
         }
