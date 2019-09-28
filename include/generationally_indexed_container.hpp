@@ -198,13 +198,4 @@ private:
 
 } // end namespace genex
 
-template<bool IsConst,
-         typename... GicArgs>
-void swap(typename genex::gic<GicArgs...>::template x_iterator<IsConst>& it_a,
-          typename genex::gic<GicArgs...>::template x_iterator<IsConst>& it_b)
-{
-    using std::swap;
-    swap(*it_a, *it_b);
-}
-
 #endif // GENERATIONALLY_INDEXED_CONTAINER_HPP

@@ -84,18 +84,9 @@ public:
 
     // ==== Iterator concept functions ====
 
-    x_iterator(x_iterator const &it)
-        : gen_it(it.gen_it),
-          end_gen_it(it.end_gen_it),
-          obj_it(it.obj_it)
-    {}
+    x_iterator(x_iterator const &it) = default;
 
-    x_iterator& operator=(x_iterator const &it) {
-        gen_it = it.gen_it;
-        end_gen_it = it.end_gen_it;
-        obj_it = it.obj_it;
-        return *this;
-    }
+    x_iterator& operator=(x_iterator const &it) = default;
 
     x_iterator& operator++() {
         advance_to_next_allocated<assume_current_is_allocated>();
@@ -107,7 +98,16 @@ public:
     }
 };
 
-
 } // end namespace genex
+
+template<class GIter, class OIter>
+void swap(genex::x_iterator<GIter, OIter>& it_a,
+          genex::x_iterator<GIter, OIter>& it_b)
+noexcept(std::is_nothrow_swappable_v<
+            typename genex::x_iterator<GIter, OIter>::value_type>)
+{
+    using std::swap;
+    swap(*it_a, *it_b);
+}
 
 #endif // GIC_ITERATOR_HPP
