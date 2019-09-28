@@ -27,10 +27,6 @@ public:
         std::destroy_at(&storage.object);
     }
 
-    operator T&() {
-        return storage.object;
-    }
-
     T * get_pointer() {
         return &storage.object;
     }
