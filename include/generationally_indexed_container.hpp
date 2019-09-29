@@ -1,7 +1,7 @@
 #ifndef GENERATIONALLY_INDEXED_CONTAINER_HPP
 #define GENERATIONALLY_INDEXED_CONTAINER_HPP
 
-#include <cstdint>
+#include <cstddef>
 #include <utility>
 #include <functional>
 #include <algorithm>
@@ -9,43 +9,12 @@
 #include <iterator>
 #include <type_traits>
 
+#include "key.hpp"
 #include "manually_destructed.hpp"
 #include "element_validity_embedded_in_generation.hpp"
 #include "gic_iterator.hpp"
 
 namespace genex {
-
-template<class Tag,
-         typename Index = size_t,
-         typename Generation = size_t,
-         Generation InitialGeneration = 0>
-class key {
-public:
-    key(Index&& index, Generation&& gen = InitialGeneration) :
-        index(std::forward<Index>(index)),
-        generation(std::forward<Generation>(gen))
-    {}
-
-    key(Index const & index, Generation const & gen) :
-        index(index),
-        generation(gen)
-    {}
-
-    Generation const & get_generation() const {
-        return generation;
-    }
-
-    Index const & get_index() const {
-        return index;
-    }
-
-private:
-    Index index;
-
-    // even for empty keys, odd for keys of living objects
-    Generation generation;
-};
-
 
 template<typename T,
          template<class> class ObjectContainer = std::vector,
