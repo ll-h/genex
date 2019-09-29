@@ -7,12 +7,20 @@ namespace genex {
 template<class Derived>
 struct crtp_base {
 protected:
-    Derived& as_derived() {
-        return *static_cast<Derived*>(this);
+    Derived& as_derived() & {
+        return static_cast<Derived&>(*this);
     }
 
-    Derived const & as_derived() const {
-        return *static_cast<Derived const*>(this);
+    Derived const & as_derived() const & {
+        return static_cast<Derived const &>(*this);
+    }
+
+    Derived&& as_derived() && {
+        return static_cast<Derived&&>(*this);
+    }
+
+    Derived const && as_derived() const && {
+        return static_cast<Derived const &&>(*this);
     }
 };
 

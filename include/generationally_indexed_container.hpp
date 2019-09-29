@@ -40,7 +40,7 @@ public:
         typename wrapped_object_constainer::const_iterator>;
 
 
-    split_gic() {}
+    split_gic() = default;
 
     ~split_gic() {
         // all living objects must be destroyed
@@ -100,14 +100,18 @@ public:
         }
     }
 
-    void remove(key_type const & k) {
-        auto gen = k.get_generation();
-        if(genex::is_valid(gen)) {
-            auto idx = k.get_index();
+    bool has_been_freed(key_type const &k) {
+        return genex::is_valid(k.get_generation());
+    }
 
-            if(gen == generations[idx]) {
-                unchecked_erasure(std::forward<Index>(idx));
-            }
+    bool is_still_present(key_type const &k) {
+        return genex::is_valid(k.get_generation());
+    }
+
+    void remove(key_type const &k) {
+        auto idx = k.get_index();
+        if(k.get_generation() == generations[idx]) {
+            unchecked_erasure(std::forward<Index>(idx));
         }
     }
 
@@ -152,16 +156,13 @@ private:
     // the logic of this function only once instead of once for const
     // this and once for non-const this
     template<class Self>
-    friend auto internal_get(
+    friend decltype(auto) internal_get(
             Self&& self,
             key_type const & k)
     {
-        auto gen = k.get_generation();
-        if(genex::is_valid(gen)) {
-            auto idx = k.get_index();
-            if(gen == self.generations[idx]) {
-                return self.objects[idx].get_pointer();
-            }
+        auto idx = k.get_index();
+        if(k.get_generation() == self.generations[idx]) {
+            return self.objects[idx].get_pointer();
         }
 
         return self.failed_get();
