@@ -1,4 +1,4 @@
-#include "generationally_indexed_container.hpp"
+#include "split_gic.hpp"
 
 using namespace genex;
 
