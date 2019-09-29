@@ -9,6 +9,7 @@
 #include <iterator>
 #include <type_traits>
 
+#include "gic_base.hpp"
 #include "key.hpp"
 #include "manually_destructed.hpp"
 #include "element_validity_embedded_in_generation.hpp"
@@ -25,13 +26,27 @@ template<typename T,
          typename Generation = size_t,
          class IndexContainer = std::vector<Index>,
          class GenerationContainer = std::vector<Generation>>
-class split_gic {
+class split_gic :
+        public gic_base<
+            split_gic<
+                T,
+                ObjectContainer,
+                Index,
+                Generation,
+                IndexContainer,
+                GenerationContainer
+            >,
+            T,
+            Index,
+            Generation
+        >
+{
+private:
+    using parent_type = gic_base<split_gic, T, Index, Generation>;
 public:
-    using key_type = key<T, Index, Generation>;
+    using key_type = typename parent_type::key_type;
     using wrapped_type = manually_destructed<T>;
     using wrapped_object_constainer = ObjectContainer<wrapped_type>;
-    using element_access_type = T*;
-    using element_const_access_type = T const *;
     using iterator = embedded_gen_iterator<
         typename GenerationContainer::iterator,
         typename wrapped_object_constainer::iterator>;
@@ -50,34 +65,6 @@ public:
                 objects[index].erase();
             }
         }
-    }
-
-    [[nodiscard]] element_access_type
-    get(key_type const & k) {
-        return internal_get(*this, k);
-    }
-
-    [[nodiscard]] element_const_access_type
-    get(key_type const & k) const {
-        return internal_get(*this, k);
-    }
-
-    [[nodiscard]] element_access_type
-    operator [](key_type const & k) {
-        return get(k);
-    }
-
-    [[nodiscard]] element_const_access_type
-    operator [](key_type const & k) const {
-        return get(k);
-    }
-
-    [[nodiscard]] element_access_type failed_get() {
-        return nullptr;
-    }
-
-    [[nodiscard]] element_const_access_type failed_get() const {
-        return nullptr;
     }
 
     template<typename... Args>
@@ -100,12 +87,8 @@ public:
         }
     }
 
-    bool has_been_freed(key_type const &k) {
-        return genex::is_valid(k.get_generation());
-    }
-
-    bool is_still_present(key_type const &k) {
-        return genex::is_valid(k.get_generation());
+    bool is_present(key_type const &k) const {
+        return k.get_generation() == generations[k.get_index()];
     }
 
     void remove(key_type const &k) {
@@ -152,26 +135,11 @@ private:
         free_indexes.push_back(idx);
     }
 
+    friend parent_type;
+
     template<class Self>
     friend decltype(auto) get_access_to_element_at(Self&& self, Index&& idx) {
         return self.objects[idx].get_pointer();
-    }
-
-    // This is clearly overkill, I just wanted to see if I could write
-    // the logic of this function only once instead of once for const
-    // this and once for non-const this
-    template<class Self>
-    friend decltype(auto) internal_get(
-            Self&& self,
-            key_type const & k)
-    {
-        auto idx = k.get_index();
-        if(k.get_generation() == self.generations[idx]) {
-            return get_access_to_element_at(std::forward<Self>(self),
-                                            std::forward<Index>(idx));
-        }
-
-        return self.failed_get();
     }
 };
 
