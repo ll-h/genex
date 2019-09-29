@@ -7,6 +7,8 @@ namespace genex {
 template<class Derived>
 struct crtp_base {
 protected:
+    using derived_type = Derived;
+
     Derived& as_derived() & {
         return static_cast<Derived&>(*this);
     }

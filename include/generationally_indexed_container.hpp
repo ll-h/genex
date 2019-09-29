@@ -152,6 +152,11 @@ private:
         free_indexes.push_back(idx);
     }
 
+    template<class Self>
+    friend decltype(auto) get_access_to_element_at(Self&& self, Index&& idx) {
+        return self.objects[idx].get_pointer();
+    }
+
     // This is clearly overkill, I just wanted to see if I could write
     // the logic of this function only once instead of once for const
     // this and once for non-const this
@@ -162,7 +167,8 @@ private:
     {
         auto idx = k.get_index();
         if(k.get_generation() == self.generations[idx]) {
-            return self.objects[idx].get_pointer();
+            return get_access_to_element_at(std::forward<Self>(self),
+                                            std::forward<Index>(idx));
         }
 
         return self.failed_get();
