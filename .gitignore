@@ -80,3 +80,7 @@ Thumbs.db
 **/CMakeFiles/**
 Testing
 CMakeCache.txt
+
+# File used to make quick tests
+playground.cpp
+
