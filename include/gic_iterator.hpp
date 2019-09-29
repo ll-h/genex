@@ -7,7 +7,7 @@
 namespace genex {
 
 template<class GenerationIterator, class ObjectIterator>
-class x_iterator {
+class embedded_gen_iterator {
 private:
     static constexpr bool is_const_iterator_v =
         std::is_const_v<
@@ -73,7 +73,7 @@ public:
     >;
 
     // custom constructor
-    x_iterator(gen_iter&& gi, gen_iter&& end_gi, obj_iter&& oi)
+    embedded_gen_iterator(gen_iter&& gi, gen_iter&& end_gi, obj_iter&& oi)
         : gen_it(std::forward<gen_iter>(gi)),
           end_gen_it(std::forward<gen_iter>(end_gi)),
           obj_it(std::forward<obj_iter>(oi))
@@ -84,11 +84,11 @@ public:
 
     // ==== Iterator concept functions ====
 
-    x_iterator(x_iterator const &it) = default;
+    embedded_gen_iterator(embedded_gen_iterator const &it) = default;
 
-    x_iterator& operator=(x_iterator const &it) = default;
+    embedded_gen_iterator& operator=(embedded_gen_iterator const &it) = default;
 
-    x_iterator& operator++() {
+    embedded_gen_iterator& operator++() {
         advance_to_next_allocated<assume_current_is_allocated>();
         return *this;
     }
@@ -101,10 +101,10 @@ public:
 } // end namespace genex
 
 template<class GIter, class OIter>
-void swap(genex::x_iterator<GIter, OIter>& it_a,
-          genex::x_iterator<GIter, OIter>& it_b)
+void swap(genex::embedded_gen_iterator<GIter, OIter>& it_a,
+          genex::embedded_gen_iterator<GIter, OIter>& it_b)
 noexcept(std::is_nothrow_swappable_v<
-            typename genex::x_iterator<GIter, OIter>::value_type>)
+            typename genex::embedded_gen_iterator<GIter, OIter>::value_type>)
 {
     using std::swap;
     swap(*it_a, *it_b);

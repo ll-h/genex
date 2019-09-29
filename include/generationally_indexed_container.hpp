@@ -29,10 +29,10 @@ public:
     using wrapped_object_constainer = ObjectContainer<wrapped_type>;
     using element_access_type = T*;
     using element_const_access_type = T const *;
-    using iterator = x_iterator<
+    using iterator = embedded_gen_iterator<
         typename GenerationContainer::iterator,
         typename wrapped_object_constainer::iterator>;
-    using const_iterator = x_iterator<
+    using const_iterator = embedded_gen_iterator<
         typename GenerationContainer::const_iterator,
         typename wrapped_object_constainer::const_iterator>;
 
