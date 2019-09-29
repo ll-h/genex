@@ -16,7 +16,7 @@ struct set_to_0_upon_destruction {
 int main() {
     int ret = 1;
 
-    gic<set_to_0_upon_destruction> container;
+    split_gic<set_to_0_upon_destruction> container;
     auto key = container.emplace(ret);
     container.remove(key);
 

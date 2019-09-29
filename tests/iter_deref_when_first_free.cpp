@@ -4,7 +4,7 @@ int main() {
     static int const FREE_VAL = 9999;
     static int const VAL = 789;
 
-    genex::gic<int> container;
+    genex::split_gic<int> container;
     auto free_key = container.emplace(FREE_VAL);
     auto sec_key = container.emplace(VAL);
     container.remove(free_key);

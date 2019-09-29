@@ -4,7 +4,7 @@
 using namespace genex;
 
 int main() {
-    gic<int> container;
+    split_gic<int> container;
 
     static const int VAL = 444;
 

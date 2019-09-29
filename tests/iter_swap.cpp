@@ -6,7 +6,7 @@ int main() {
     static int const VAL_A = 789;
     static int const VAL_B = 9999;
 
-    genex::gic<int> container;
+    genex::split_gic<int> container;
     auto key_a = container.emplace(VAL_A);
     auto key_b = container.emplace(VAL_B);
 

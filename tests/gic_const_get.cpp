@@ -5,7 +5,7 @@ using namespace genex;
 
 static const int VAL = 444;
 
-static int check_from_const(gic<int> const &container, gic<int>::key_type const &k) {
+static int check_from_const(split_gic<int> const &container, split_gic<int>::key_type const &k) {
     // testing call to get on a const gic
     int const * maybe_val = container.get(k);
 
@@ -28,7 +28,7 @@ static int check_from_const(gic<int> const &container, gic<int>::key_type const 
 }
 
 int main() {
-    gic<int> container;
+    split_gic<int> container;
 
     auto key = container.emplace(VAL);
     return check_from_const(container, key);

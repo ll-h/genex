@@ -2,7 +2,7 @@
 
 int main() {
     static int const VAL = 789;
-    genex::gic<int> container;
+    genex::split_gic<int> container;
     auto __ = container.emplace(VAL);
 
     auto it = container.begin();

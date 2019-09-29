@@ -3,7 +3,7 @@
 using namespace genex;
 
 int main() {
-    gic<int> container;
+    split_gic<int> container;
 
     static const int OLD_VAL = 444;
     static const int NEW_VAL = 999;

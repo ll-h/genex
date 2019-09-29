@@ -12,17 +12,20 @@
 #include "key.hpp"
 #include "manually_destructed.hpp"
 #include "element_validity_embedded_in_generation.hpp"
-#include "gic_iterator.hpp"
+#include "embedded_gen_iterator.hpp"
 
 namespace genex {
 
+// A generationnally indexed container where the objects, their generation and
+// the indexes of freed objects are in separate containers and whether an object
+// is free or not is determined by the generation.
 template<typename T,
          template<class> class ObjectContainer = std::vector,
          typename Index = size_t,
          typename Generation = size_t,
          class IndexContainer = std::vector<Index>,
          class GenerationContainer = std::vector<Generation>>
-class gic {
+class split_gic {
 public:
     using key_type = key<T, Index, Generation>;
     using wrapped_type = manually_destructed<T>;
@@ -37,9 +40,9 @@ public:
         typename wrapped_object_constainer::const_iterator>;
 
 
-    gic() {}
+    split_gic() {}
 
-    ~gic() {
+    ~split_gic() {
         // all living objects must be destroyed
         Index const max = generations.size();
         for(Index index = 0; index < max; ++index) {
