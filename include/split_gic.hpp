@@ -34,15 +34,16 @@ class split_gic :
                 Index,
                 Generation,
                 IndexContainer,
-                GenerationContainer
-            >,
+                GenerationContainer>,
             T,
             Index,
-            Generation
+            GenerationContainer
         >
 {
 private:
-    using parent_type = gic_base<split_gic, T, Index, Generation>;
+    using parent_type = gic_base<split_gic, T, Index, GenerationContainer>;
+    using parent_type::generations;
+
 public:
     using key_type = typename parent_type::key_type;
     using wrapped_type = manually_destructed<T>;
@@ -96,8 +97,8 @@ public:
     }
 
     void remove(key_type const &k) {
-        auto idx = k.get_index();
         if(is_present(k)) {
+            auto idx = k.get_index();
             unchecked_erasure(std::forward<Index>(idx));
         }
     }
@@ -130,7 +131,6 @@ public:
 
 private:
     ObjectContainer<wrapped_type> objects;
-    GenerationContainer generations;
     IndexContainer free_indexes;
 
     void unchecked_erasure(Index&& idx) {
