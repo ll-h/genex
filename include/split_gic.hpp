@@ -59,10 +59,14 @@ public:
 
     ~split_gic() {
         // all living objects must be destroyed
-        Index const max = generations.size();
-        for(Index index = 0; index < max; ++index) {
-            if(genex::is_valid(generations[index])) {
-                objects[index].erase();
+        auto obj_it = objects.begin();
+        auto gen_it = generations.cbegin();
+        for(const auto gen_end = generations.cend();
+            gen_it != gen_end;
+            ++gen_it, ++obj_it)
+        {
+            if(genex::is_valid(*gen_it)) {
+                obj_it->erase();
             }
         }
     }
@@ -93,7 +97,7 @@ public:
 
     void remove(key_type const &k) {
         auto idx = k.get_index();
-        if(k.get_generation() == generations[idx]) {
+        if(is_present(k)) {
             unchecked_erasure(std::forward<Index>(idx));
         }
     }
