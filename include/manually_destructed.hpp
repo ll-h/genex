@@ -51,6 +51,13 @@ public:
     }
 
 private:
+    // This union is what makes this type possible: managing its content is
+    // done manually, by definition of a union, and this includes the
+    // destruction. Therefore, when the instance of storage_type is destroyed,
+    // nothing more than a call to its destructor is done, and since it is
+    // empty, nothing happens. Without wrapping the object in this union, even
+    // with an empty destructor of manually_destructed, the destructor of the
+    // object would have been called.
     union storage_type {
         T object;
         WhenDestroyed when_destroyed;

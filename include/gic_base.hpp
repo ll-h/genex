@@ -8,9 +8,7 @@
 
 namespace genex {
 
-// A generationnally indexed container where the objects, their generation and
-// the indexes of freed objects are in separate containers and whether an object
-// is free or not is determined by the generation.
+// Base class for generationally indexed containers
 template<class Derived,
          typename T,
          typename Index,

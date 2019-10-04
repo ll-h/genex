@@ -141,6 +141,10 @@ private:
 
     friend parent_type;
 
+    // templating on Self and using a "hidden friend" allows the body to be
+    // written only once instead of once for each of the "this" alternatives
+    // which are {&, const &, &&, const &&}. "const &&" is relevant because
+    // it catches the mistake of calling std::cref on a temporary object.
     template<class Self>
     friend decltype(auto) get_access_to_element_at(Self&& self, Index&& idx) {
         return self.objects[idx].get_pointer();
