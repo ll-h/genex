@@ -22,32 +22,37 @@ namespace genex {
 // is free or not is determined by the generation.
 template<typename T,
          template<class> class ObjectContainer = std::vector,
-         typename Index = size_t,
-         typename Generation = size_t,
-         class IndexContainer = std::vector<Index>,
-         class GenerationContainer = std::vector<Generation>>
+         class Key = key<T>,
+         class IndexContainer = std::vector<typename Key::index_type>,
+         class GenerationContainer = std::vector<typename Key::generation_type>>
 class split_gic :
         public gic_base<
             split_gic<
                 T,
                 ObjectContainer,
-                Index,
-                Generation,
+                Key,
                 IndexContainer,
                 GenerationContainer>,
             T,
-            Index,
+            Key,
             GenerationContainer
         >
 {
 private:
-    using parent_type = gic_base<split_gic, T, Index, GenerationContainer>;
+    using parent_type = gic_base<split_gic, T, Key, GenerationContainer>;
+
+    // without this line, we can only refer to 'generations' with
+    // 'this->generations' because the base class is templated.
     using parent_type::generations;
 
 public:
     using key_type = typename parent_type::key_type;
+    using index_type = typename key_type::index_type;
+    using generation_type = typename key_type::generation_type;
+
     using wrapped_type = manually_destructed<T>;
     using wrapped_object_constainer = ObjectContainer<wrapped_type>;
+
     using iterator = embedded_gen_iterator<
         typename GenerationContainer::iterator,
         typename wrapped_object_constainer::iterator>;
@@ -75,7 +80,7 @@ public:
     template<typename... Args>
     [[nodiscard]] key_type emplace(Args&&... args) {
         if (free_indexes.empty()) {
-            key_type k(objects.size());
+            key_type k(objects.size(), generation_type{});
             objects.emplace_back(std::forward<Args>(args)...);
             generations.push_back(k.get_generation());
             return k;
@@ -99,13 +104,13 @@ public:
     void remove(key_type const &k) {
         if(is_present(k)) {
             auto idx = k.get_index();
-            unchecked_erasure(std::forward<Index>(idx));
+            unchecked_erasure(std::forward<index_type>(idx));
         }
     }
 
-    void erase(Index&& index) {
+    void erase(index_type&& index) {
         if(genex::is_valid(generations[index])) {
-            unchecked_erasure(std::forward<Index>(index));
+            unchecked_erasure(std::forward<index_type>(index));
         }
     }
 
@@ -133,7 +138,7 @@ private:
     ObjectContainer<wrapped_type> objects;
     IndexContainer free_indexes;
 
-    void unchecked_erasure(Index&& idx) {
+    void unchecked_erasure(index_type&& idx) {
         ++generations[idx];
         objects[idx].erase();
         free_indexes.push_back(idx);
@@ -148,7 +153,7 @@ private:
     template<class Self>
     friend decltype(auto) get_access_to_element_at(
             Self&& self,
-            const Index& idx)
+            const index_type& idx)
     {
         return self.objects[idx].get_pointer();
     }

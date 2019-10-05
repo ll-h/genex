@@ -11,13 +11,15 @@ namespace genex {
 // Base class for generationally indexed containers
 template<class Derived,
          typename T,
-         typename Index,
+         typename Key,
          typename GenerationContainer>
 class gic_base : public crtp_base<Derived> {
 public:
     using value_type = T;
-    using generation_type = typename GenerationContainer::value_type;
-    using key_type = key<value_type, Index, generation_type>;
+    using key_type = Key;
+    static_assert (is_tagged_key_v<key_type, value_type>);
+
+    using generation_type = typename key_type::generation_type;
     using element_access_type = value_type*;
     using element_const_access_type = value_type const *;
 

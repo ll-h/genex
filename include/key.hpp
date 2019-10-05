@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <utility>
 
-#include "concept_helpers.hpp"
-
 namespace genex {
 
 // This function exhaustively lists the required behaviors of a type that can be
@@ -17,6 +15,7 @@ auto key_requirements() {
     // public types
     using Index = typename Key::index_type;
     using Generation = typename Key::generation_type;
+    using Tag = typename Key::tag_type;
 
     // constructors
     auto constructor_by_cref = [] (Index const &i, Generation const &g) {
@@ -37,6 +36,7 @@ auto key_requirements() {
     (void)constructor_by_cref;
     (void)constructor_by_rvalref;
     (void)public_member_functions;
+    (void)[](Tag t) { (void)t; };
 
     // using "auto" as return type instead of just "void" forces the compiler to
     // look into this function and check if its body can be instanciated with T.
@@ -55,18 +55,23 @@ struct is_key<T, decltype(key_requirements<T>())>
 template<typename T>
 static constexpr bool is_key_v = is_key<T>::value;
 
+template<typename Key, typename Tag>
+static constexpr bool is_tagged_key_v =
+        is_key_v<Key> &&
+        std::is_same_v<typename Key::tag_type, Tag>;
+
 // Default key implementation. It is used as default tmeplate parameter of genex
 // containers.
 template<class Tag,
          typename Index = uint32_t,
-         typename Generation = uint32_t,
-         Generation InitialGeneration = 0>
+         typename Generation = uint32_t>
 class key {
 public:
     using index_type = Index;
     using generation_type = Generation;
+    using tag_type = Tag;
 
-    key(Index&& index, Generation&& gen = InitialGeneration) :
+    key(Index&& index, Generation&& gen) :
         index(std::forward<Index>(index)),
         generation(std::forward<Generation>(gen))
     {}
