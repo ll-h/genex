@@ -51,14 +51,14 @@ public:
     using generation_type = typename key_type::generation_type;
 
     using wrapped_type = manually_destructed<T>;
-    using wrapped_object_constainer = ObjectContainer<wrapped_type>;
+    using wrapped_object_container = ObjectContainer<wrapped_type>;
 
     using iterator = embedded_gen_iterator<
         typename GenerationContainer::iterator,
-        typename wrapped_object_constainer::iterator>;
+        typename wrapped_object_container::iterator>;
     using const_iterator = embedded_gen_iterator<
         typename GenerationContainer::const_iterator,
-        typename wrapped_object_constainer::const_iterator>;
+        typename wrapped_object_container::const_iterator>;
 
 
     split_gic() = default;
