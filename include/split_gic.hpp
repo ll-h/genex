@@ -146,7 +146,10 @@ private:
     // which are {&, const &, &&, const &&}. "const &&" is relevant because
     // it catches the mistake of calling std::cref on a temporary object.
     template<class Self>
-    friend decltype(auto) get_access_to_element_at(Self&& self, Index&& idx) {
+    friend decltype(auto) get_access_to_element_at(
+            Self&& self,
+            const Index& idx)
+    {
         return self.objects[idx].get_pointer();
     }
 };

@@ -65,10 +65,7 @@ private:
             key_type const & k)
     {
         if(self.as_derived().is_present(k)) {
-            auto idx = k.get_index();
-            return get_access_to_element_at(
-                        self.as_derived(),
-                        std::forward<Index>(idx));
+            return get_access_to_element_at(self.as_derived(), k.get_index());
         }
 
         return self.failed_get();
