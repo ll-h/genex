@@ -1,7 +1,7 @@
 #ifndef GIC_KEY_HPP
 #define GIC_KEY_HPP
 
-#include <stdint.h>
+#include <cstddef>
 #include <utility>
 
 namespace genex {
@@ -19,10 +19,10 @@ auto key_requirements() {
 
     // constructors
     auto constructor_by_cref = [] (Index const &i, Generation const &g) {
-        Key k(i, g);
+        Key k{i, g};
     };
     auto constructor_by_rvalref = [] (Index&& i, Generation&& g) {
-        Key k(std::forward<Index>(i), std::forward<Generation>(g));
+        Key k{std::forward<Index>(i), std::forward<Generation>(g)};
     };
 
     // public member functions
@@ -63,8 +63,8 @@ static constexpr bool is_tagged_key_v =
 // Default key implementation. It is used as default tmeplate parameter of genex
 // containers.
 template<class Tag,
-         typename Index = uint32_t,
-         typename Generation = uint32_t>
+         typename Index = size_t,
+         typename Generation = size_t>
 class key {
 public:
     using index_type = Index;

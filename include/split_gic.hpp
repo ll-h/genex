@@ -80,7 +80,7 @@ public:
     template<typename... Args>
     [[nodiscard]] key_type emplace(Args&&... args) {
         if (free_indexes.empty()) {
-            key_type k(objects.size(), generation_type{});
+            key_type k{index_type{objects.size()}, generation_type{}};
             objects.emplace_back(std::forward<Args>(args)...);
             generations.push_back(k.get_generation());
             return k;
@@ -89,7 +89,7 @@ public:
             auto idx = free_indexes.back();
             auto & gen = generations[idx];
             ++gen;
-            key_type k(idx, gen);
+            key_type k{idx, gen};
             objects[idx].emplace(std::forward<Args>(args)...);
             free_indexes.pop_back();
 
