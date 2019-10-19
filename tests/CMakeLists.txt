@@ -16,12 +16,19 @@ endfunction()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+
+file(GLOB header_only_utilities "*.hpp")
 file(GLOB test_files "*.cpp")
 
 foreach(test_file IN LISTS test_files)
     target_name_from_file(target "${test_file}")
     message(STATUS "${target}")
     add_executable("${target}" EXCLUDE_FROM_ALL "${test_file}")
+
+    foreach(utility IN LISTS header_only_utilities)
+        target_sources("${target}" INTERFACE "${utility}")
+    endforeach()
+
     target_link_libraries("${target}" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     add_test_and_dependency("${target}")
 endforeach()
