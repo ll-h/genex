@@ -5,7 +5,7 @@ project :
         <include>../include
         <variant>debug
         <toolset>gcc:<cxxflags>"-std=c++17 -pedantic -Wall -Wextra"
-        <library>/boost/test/unit_test_framework <link>shared
+        <library>/boost//unit_test_framework <link>shared
 ;
 
 for local source in [ glob *.cpp ]
