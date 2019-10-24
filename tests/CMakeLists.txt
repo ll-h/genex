@@ -15,7 +15,7 @@ function(target_name_from_file target_name file_name)
 endfunction()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
+include_directories(generic)
 
 file(GLOB header_only_utilities "*.hpp")
 file(GLOB test_files "*.cpp")
@@ -32,5 +32,7 @@ foreach(test_file IN LISTS test_files)
     target_link_libraries("${target}" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     add_test_and_dependency("${target}")
 endforeach()
+
+target_sources(split_gic.exe INTERFACE generic/gic_base.hpp)
 
 add_dependencies(check tests)
