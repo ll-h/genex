@@ -134,6 +134,14 @@ public:
         return cbegin();
     }
 
+    decltype(auto) unchecked_get(index_type const& idx) {
+        return objects[idx].get_pointer();
+    }
+
+    decltype(auto) unchecked_get(index_type const& idx) const {
+        return objects[idx].get_pointer();
+    }
+
 private:
     ObjectContainer<wrapped_type> objects;
     IndexContainer free_indexes;
@@ -142,20 +150,6 @@ private:
         ++generations[idx];
         objects[idx].erase();
         free_indexes.push_back(idx);
-    }
-
-    friend parent_type;
-
-    // templating on Self and using a "hidden friend" allows the body to be
-    // written only once instead of once for each of the "this" alternatives
-    // which are {&, const &, &&, const &&}. "const &&" is relevant because
-    // it catches the mistake of calling std::cref on a temporary object.
-    template<class Self>
-    friend decltype(auto) get_access_to_element_at(
-            Self&& self,
-            const index_type& idx)
-    {
-        return self.objects[idx].get_pointer();
     }
 };
 
