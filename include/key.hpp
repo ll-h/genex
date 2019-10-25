@@ -29,6 +29,9 @@ auto key_requirements() {
     auto public_member_functions = [] (Key const& k) {
         Index const& i = k.get_index();
         Generation const& g = k.get_generation();
+
+        (void)i;
+        (void)g;
     };
 
 

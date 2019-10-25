@@ -21,7 +21,7 @@ namespace genex {
 // the indexes of freed objects are in separate containers and whether an object
 // is free or not is determined by the generation.
 template<typename T,
-         template<class> class ObjectContainer = std::vector,
+         template<class...> class ObjectContainer = std::vector,
          class Key = key<T>,
          class IndexContainer = std::vector<typename Key::index_type>,
          class GenerationContainer = std::vector<typename Key::generation_type>>
