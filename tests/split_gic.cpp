@@ -9,7 +9,8 @@ using namespace genex;
 
 BOOST_AUTO_TEST_SUITE( split_gic_tests )
 
-using gic_derived = split_gic<int>;
+template<typename... Args>
+using gic_derived = split_gic<Args...>;
 #define OUTER_GIC_TEST
 #include "generic/gic_base.hpp"
 
