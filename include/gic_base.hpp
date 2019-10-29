@@ -67,7 +67,7 @@ private:
             key_type const & k)
     {
         if(self.as_derived().is_present(k)) {
-            return get_access_to_element_at(self.as_derived(), k.get_index());
+            return self.as_derived().unchecked_get(k.get_index());
         }
 
         return self.failed_get();

@@ -21,7 +21,7 @@ namespace genex {
 // the indexes of freed objects are in separate containers and whether an object
 // is free or not is determined by the generation.
 template<typename T,
-         template<class> class ObjectContainer = std::vector,
+         template<class...> class ObjectContainer = std::vector,
          class Key = key<T>,
          class IndexContainer = std::vector<typename Key::index_type>,
          class GenerationContainer = std::vector<typename Key::generation_type>>
@@ -134,6 +134,34 @@ public:
         return cbegin();
     }
 
+    iterator end() {
+        return {
+            generations.end(),
+            generations.end(),
+            objects.end()
+        };
+    }
+
+    const_iterator cend() const {
+        return {
+            generations.cend(),
+            generations.cend(),
+            objects.cend()
+        };
+    }
+
+    const_iterator end() const {
+        return cend();
+    }
+
+    decltype(auto) unchecked_get(index_type const& idx) {
+        return objects[idx].get_pointer();
+    }
+
+    decltype(auto) unchecked_get(index_type const& idx) const {
+        return objects[idx].get_pointer();
+    }
+
 private:
     ObjectContainer<wrapped_type> objects;
     IndexContainer free_indexes;
@@ -142,20 +170,6 @@ private:
         ++generations[idx];
         objects[idx].erase();
         free_indexes.push_back(idx);
-    }
-
-    friend parent_type;
-
-    // templating on Self and using a "hidden friend" allows the body to be
-    // written only once instead of once for each of the "this" alternatives
-    // which are {&, const &, &&, const &&}. "const &&" is relevant because
-    // it catches the mistake of calling std::cref on a temporary object.
-    template<class Self>
-    friend decltype(auto) get_access_to_element_at(
-            Self&& self,
-            const index_type& idx)
-    {
-        return self.objects[idx].get_pointer();
     }
 };
 
