@@ -7,14 +7,17 @@ using namespace boost::unit_test;
 
 using namespace genex;
 
-BOOST_AUTO_TEST_SUITE( split_gic_tests )
-
 template<typename... Args>
 using gic_derived = split_gic<Args...>;
 #define OUTER_GIC_TEST
-#include "generic/gic_base.hpp"
+
+BOOST_AUTO_TEST_SUITE( split_gic_tests )
+
+#include "generic/gic_base_tests.hpp"
+#include "generic/gic_iterator_tests.hpp"
 
 BOOST_AUTO_TEST_SUITE_END()
+
 
 static bool empty_init() {
     return true;

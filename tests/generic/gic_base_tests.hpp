@@ -2,21 +2,9 @@
 #define BOOST_TEST_DYN_LINK
 #endif
 #include <boost/test/unit_test.hpp>
+#include "generic_test_definitions.hpp"
 #include "../zero_on_destruction.hpp"
 using namespace boost::unit_test;
-
-// for IDEs
-#ifndef OUTER_GIC_TEST
-#include <split_gic.hpp>
-using namespace genex;
-template<typename... Args>
-using gic_derived = split_gic<Args...>;
-#endif
-
-static const int
-    NON_ZERO_VAL = 444,
-    NON_ZERO_VAL_1 = NON_ZERO_VAL,
-    NON_ZERO_VAL_2 = 5555;
 
 BOOST_AUTO_TEST_CASE( emplace_get ) {
     gic_derived<int> container;
@@ -91,6 +79,7 @@ BOOST_AUTO_TEST_CASE( destruction_on_raii ) {
     {
         gic_derived<zero_on_destruction<int>> container;
         auto key = container.emplace(val);
+        (void)key;
     }
 
     BOOST_TEST(val == 0);

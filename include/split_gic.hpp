@@ -134,6 +134,26 @@ public:
         return cbegin();
     }
 
+    iterator end() {
+        return {
+            generations.end(),
+            generations.end(),
+            objects.end()
+        };
+    }
+
+    const_iterator cend() const {
+        return {
+            generations.cend(),
+            generations.cend(),
+            objects.cend()
+        };
+    }
+
+    const_iterator end() const {
+        return cend();
+    }
+
     decltype(auto) unchecked_get(index_type const& idx) {
         return objects[idx].get_pointer();
     }
