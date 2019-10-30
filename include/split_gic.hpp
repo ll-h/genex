@@ -97,12 +97,8 @@ public:
         }
     }
 
-    bool is_present(key_type const &k) const {
-        return k.get_generation() == generations[k.get_index()];
-    }
-
     void remove(key_type const &k) {
-        if(is_present(k)) {
+        if(this->is_present(k)) {
             auto idx = k.get_index();
             unchecked_erasure(std::forward<index_type>(idx));
         }

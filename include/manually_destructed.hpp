@@ -28,11 +28,11 @@ public:
     }
 
     T * get_pointer() {
-        return &storage.object;
+        return std::addressof(storage.object);
     }
 
     T const * get_pointer() const {
-        return &storage.object;
+        return std::addressof(storage.object);
     }
 
     template<class Self,

@@ -43,6 +43,10 @@ public:
         return get(k);
     }
 
+    bool is_present(key_type const &k) const {
+        return k.get_generation() == generations[k.get_index()];
+    }
+
     [[nodiscard]] element_access_type failed_get() {
         return nullptr;
     }
