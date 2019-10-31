@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+find_package(Boost)
 
 project(Genex)
 
@@ -7,6 +8,10 @@ set (CMAKE_CXX_STANDARD 17)
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE include/)
+target_include_directories(
+    ${PROJECT_NAME}
+    INTERFACE
+    ${Boost_INCLUDE_DIR})
 
 file(GLOB target_source_files "include/*")
 foreach(target_source_file IN LISTS target_source_files)

@@ -1,5 +1,5 @@
-#ifndef GENERATIONALLY_INDEXED_CONTAINER_HPP
-#define GENERATIONALLY_INDEXED_CONTAINER_HPP
+#ifndef SPLIT_GENERATIONALLY_INDEXED_CONTAINER_HPP
+#define SPLIT_GENERATIONALLY_INDEXED_CONTAINER_HPP
 
 #include <cstddef>
 #include <utility>
@@ -97,12 +97,8 @@ public:
         }
     }
 
-    bool is_present(key_type const &k) const {
-        return k.get_generation() == generations[k.get_index()];
-    }
-
     void remove(key_type const &k) {
-        if(is_present(k)) {
+        if(this->is_present(k)) {
             auto idx = k.get_index();
             unchecked_erasure(std::forward<index_type>(idx));
         }
@@ -175,4 +171,4 @@ private:
 
 } // end namespace genex
 
-#endif // GENERATIONALLY_INDEXED_CONTAINER_HPP
+#endif // SPLIT_GENERATIONALLY_INDEXED_CONTAINER_HPP
