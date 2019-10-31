@@ -20,7 +20,7 @@ using gic_derived = gic_fit<
 BOOST_AUTO_TEST_SUITE( gic_fast_iterable_tests )
 
 #include "generic/gic_base_tests.hpp"
-//#include "generic/gic_iterator_tests.hpp"
+#include "generic/gic_iterator_tests.hpp"
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -1,5 +1,5 @@
-#ifndef GENERATIONALLY_INDEXED_CONTAINER_HPP
-#define GENERATIONALLY_INDEXED_CONTAINER_HPP
+#ifndef FAST_ITERABLE_GIC_HPP
+#define FAST_ITERABLE_GIC_HPP
 
 #include <cstddef>
 #include <utility>
@@ -9,7 +9,13 @@
 #include <type_traits>
 #include <variant>
 
+#include <boost/iterator/filter_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+
 #include "gic_base.hpp"
+
+// https://youtu.be/hwT8K3-NH1w
+#define PERFECT_BACKWARD( x ) static_cast<decltype(x)>(x)
 
 namespace genex {
 
@@ -47,6 +53,9 @@ private:
     using parent_type::generations;
 
 public:
+    using value_type = T;
+    using reference = T&;
+    using const_reference = T const&;
     using key_type = typename parent_type::key_type;
     using index_type = typename key_type::index_type;
     using generation_type = typename key_type::generation_type;
@@ -54,8 +63,101 @@ public:
     using wrapped_type = Variant<index_type, T>;
     using wrapped_object_container = ObjectContainer<wrapped_type>;
 
-    using iterator = typename wrapped_object_container::iterator;
-    using const_iterator = typename wrapped_object_container::const_iterator;
+private:
+    wrapped_object_container objects;
+
+    // head of the singly-linked list of free elements
+    index_type free_head;
+    index_type number_of_free_elements{0};
+
+    void unchecked_erasure(index_type&& idx) {
+        ++generations[idx];
+        objects[idx].template emplace<0>(free_head);
+        free_head = idx;
+        ++number_of_free_elements;
+    }
+
+
+    // ===== Iterator ====
+
+    // filter
+    struct is_slot_occupied {
+        // making this function 'const' is necessary. It was HARD to find out.
+        bool operator()(wrapped_type const& slot) const {
+            return slot.index() == 1;
+        }
+    };
+
+    // transform
+    struct slot_unwrapper {
+        reference operator()(wrapped_type & slot) const {
+            return std::get<1>(slot);
+        }
+
+        const_reference operator()(wrapped_type const& slot) const {
+            return std::get<1>(slot);
+        }
+    };
+
+    // Main implementation of the iterator.
+    // The rest is used to retrieve its types (const and non-const).
+    template <typename Iter>
+    static decltype(auto) make_iterator(Iter start_it, Iter end_it) {
+        return PERFECT_BACKWARD(
+            boost::make_transform_iterator<slot_unwrapper>(
+                boost::make_filter_iterator<is_slot_occupied>(
+                    start_it,
+                    end_it)));
+    }
+
+    template <typename Iter>
+    static decltype(auto) make_end_iterator(Iter end_it) {
+        return PERFECT_BACKWARD(make_iterator(end_it, end_it));
+    }
+
+    template<bool IsConst>
+    using conditionally_const_base_iterator = std::conditional_t<
+        IsConst,
+        typename wrapped_object_container::const_iterator,
+        typename wrapped_object_container::iterator
+    >;
+
+    template<bool IsConst>
+    using conditionally_const_iterator = decltype(make_end_iterator(
+        std::declval<conditionally_const_base_iterator<IsConst>>()));
+
+public:
+    using iterator = conditionally_const_iterator<false>;
+    using const_iterator = conditionally_const_iterator<true>;
+
+    iterator begin() {
+        return make_iterator(objects.begin(),
+                             objects.end());
+    }
+
+    const_iterator cbegin() const {
+        return make_iterator(objects.cbegin(),
+                             objects.cend());
+    }
+
+    const_iterator begin() const {
+        return cbegin();
+    }
+
+    iterator end() {
+        return make_end_iterator(objects.end());
+    }
+
+    const_iterator cend() const {
+        return make_end_iterator(objects.cend());
+    }
+
+    const_iterator end() const {
+        return cend();
+    }
+
+
+    // ===== Core functionalities =====
 
     ~gic_fit() = default;
     // destroys this->objects, which should call the destructor of each of its
@@ -96,29 +198,8 @@ public:
         }
     }
 
-    iterator begin() {
-        return objects.begin();
-    }
 
-    const_iterator cbegin() const {
-        return objects.cbegin();
-    }
-
-    const_iterator begin() const {
-        return cbegin();
-    }
-
-    iterator end() {
-        return objects.end();
-    }
-
-    const_iterator cend() const {
-        return objects.cend();
-    }
-
-    const_iterator end() const {
-        return cend();
-    }
+    // ===== CRTP overrides =====
 
     decltype(auto) unchecked_get(index_type const& idx) {
         return std::addressof(std::get<1>(objects[idx]));
@@ -127,22 +208,8 @@ public:
     decltype(auto) unchecked_get(index_type const& idx) const {
         return std::addressof(std::get<1>(objects[idx]));
     }
-
-private:
-    wrapped_object_container objects;
-
-    // head of the singly-linked list of free elements
-    index_type free_head;
-    index_type number_of_free_elements{0};
-
-    void unchecked_erasure(index_type&& idx) {
-        ++generations[idx];
-        objects[idx].template emplace<0>(free_head);
-        free_head = idx;
-        ++number_of_free_elements;
-    }
 };
 
 } // end namespace genex
 
-#endif // GENERATIONALLY_INDEXED_CONTAINER_HPP
+#endif // FAST_ITERABLE_GIC_HPP
