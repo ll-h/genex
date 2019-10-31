@@ -3,7 +3,7 @@
 #endif
 #include <boost/test/unit_test.hpp>
 #include <vector>
-#include <gic_fast_iter.hpp>
+#include <gic_fit.hpp>
 #include <key.hpp>
 using namespace boost::unit_test;
 
