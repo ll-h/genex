@@ -10,7 +10,7 @@ using namespace boost::unit_test;
 using namespace genex;
 
 template<typename T>
-using gic_derived = gic_fast_iter<
+using gic_derived = gic_fit<
     T,
     std::vector,
     key<T>,

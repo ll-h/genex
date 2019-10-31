@@ -26,9 +26,9 @@ template<typename T,
          class Key,
          class GenerationContainer,
          template<class...> class Variant = std::variant>
-class gic_fast_iter :
+class gic_fit :
         public gic_base<
-            gic_fast_iter<
+            gic_fit<
                 T,
                 ObjectContainer,
                 Key,
@@ -40,7 +40,7 @@ class gic_fast_iter :
         >
 {
 private:
-    using parent_type = gic_base<gic_fast_iter, T, Key, GenerationContainer>;
+    using parent_type = gic_base<gic_fit, T, Key, GenerationContainer>;
 
     // without this line, we can only refer to 'generations' with
     // 'this->generations' because the base class is templated.
@@ -57,7 +57,7 @@ public:
     using iterator = typename wrapped_object_container::iterator;
     using const_iterator = typename wrapped_object_container::const_iterator;
 
-    ~gic_fast_iter() = default;
+    ~gic_fit() = default;
     // destroys this->objects, which should call the destructor of each of its
     // elements, which are variant instances that call the destructor of the
     // index or object they hold.
