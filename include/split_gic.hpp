@@ -13,7 +13,7 @@
 #include "key.hpp"
 #include "manually_destructed.hpp"
 #include "element_validity_embedded_in_generation.hpp"
-#include "embedded_gen_iterator.hpp"
+#include "split_gic_iterator.hpp"
 
 namespace genex {
 
