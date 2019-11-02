@@ -1,113 +1,107 @@
 #ifndef GIC_ITERATOR_HPP
 #define GIC_ITERATOR_HPP
 
+#include <functional>
+#include <type_traits>
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/iterator/filter_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include "element_validity_embedded_in_generation.hpp"
-#include "manually_destructed.hpp"
+#include "perfect_backward.hpp"
 
 namespace genex {
 
-template<class GenerationIterator, class ObjectIterator>
-class embedded_gen_iterator {
-private:
-    static constexpr bool is_const_iterator_v =
-        std::is_const_v<
-            std::remove_reference_t<
-                typename ObjectIterator::reference>>;
+namespace detail {
 
-    using gen_iter = GenerationIterator;
-    using obj_iter = ObjectIterator;
+// The iterator will be constructed as follows :
+//     zip(generation_iterator, object_iterator)
+//         | filter<valid_generation>
+//         | transform<get_object>
+//
+// I won't use lambdas because they can't be used in unevaluated contexts.
 
-    gen_iter gen_it;
-    const gen_iter end_gen_it;
-    obj_iter obj_it;
+constexpr int generation_tuple_index = 0;
+constexpr int object_tuple_index = 1;
 
-    static constexpr bool assume_current_is_allocated = true;
-    static constexpr bool do_not_assume_current_is_allocated = false;
-
-    template<bool assume_current_is_allocated_v>
-    void advance_to_next_allocated() {
-        auto iteration_should_continue = [this] () {
-            return (gen_it != end_gen_it) && !genex::is_valid(*gen_it);
-        };
-
-        if constexpr (!assume_current_is_allocated_v) {
-            if (!iteration_should_continue())
-                return;
-        }
-        do {
-            ++gen_it;
-            ++obj_it;
-        } while(iteration_should_continue());
-    }
-
-public:
-    // ==== Iterator traits ====
-
-    using difference_type =
-        typename std::iterator_traits<obj_iter>::difference_type;
-
-    using value_type = typename ObjectIterator::value_type::value_type;
-
-    using reference = std::add_lvalue_reference_t<
-        std::conditional_t<
-            is_const_iterator_v,
-            std::add_const_t<value_type>,
-            value_type
-        >
-    >;
-
-    using pointer = std::add_pointer_t<
-        std::conditional_t<
-            is_const_iterator_v,
-            std::add_const_t<value_type>,
-            value_type
-        >
-    >;
-
-    using iterator_category = std::conditional_t<
-        std::is_base_of_v<
-            typename gen_iter::iterator_category,
-            typename obj_iter::iterator_category>,
-        typename gen_iter::iterator_category,
-        typename obj_iter::iterator_category
-    >;
-
-    // custom constructor
-    embedded_gen_iterator(gen_iter&& gi, gen_iter&& end_gi, obj_iter&& oi)
-        : gen_it(std::forward<gen_iter>(gi)),
-          end_gen_it(std::forward<gen_iter>(end_gi)),
-          obj_it(std::forward<obj_iter>(oi))
-    {
-        // initialize the iterator to an allocated object
-        advance_to_next_allocated<do_not_assume_current_is_allocated>();
-    }
-
-    // ==== Iterator concept functions ====
-
-    embedded_gen_iterator(embedded_gen_iterator const &it) = default;
-
-    embedded_gen_iterator& operator=(embedded_gen_iterator const &it) = default;
-
-    embedded_gen_iterator& operator++() {
-        advance_to_next_allocated<assume_current_is_allocated>();
-        return *this;
-    }
-
-    reference operator*() {
-        return **obj_it;
+struct valid_generation {
+    template<typename RefPair>
+    bool operator()(RefPair&& zipped) const {
+        return genex::is_valid(zipped.template get<generation_tuple_index>());
     }
 };
 
-} // end namespace genex
+struct get_object {
+    template<typename RefPair>
+    decltype(auto) operator()(RefPair&& zipped) const {
+        return PERFECT_BACKWARD(*zipped.template get<object_tuple_index>());
+    }
+};
 
-template<class GIter, class OIter>
-void swap(genex::embedded_gen_iterator<GIter, OIter>& it_a,
-          genex::embedded_gen_iterator<GIter, OIter>& it_b)
-noexcept(std::is_nothrow_swappable_v<
-            typename genex::embedded_gen_iterator<GIter, OIter>::value_type>)
+
+struct begin_getter {
+    template<typename Container>
+    decltype(auto) operator()(Container& cont) const {
+        return PERFECT_BACKWARD(cont.begin());
+    }
+};
+
+struct cbegin_getter {
+    template<typename Container>
+    decltype(auto) operator()(Container& cont) const {
+        return PERFECT_BACKWARD(cont.cbegin());
+    }
+};
+
+struct end_getter {
+    template<typename Container>
+    decltype(auto) operator()(Container& cont) const {
+        return PERFECT_BACKWARD(cont.end());
+    }
+};
+
+struct cend_getter {
+    template<typename Container>
+    decltype(auto) operator()(Container& cont) const {
+        return PERFECT_BACKWARD(cont.cend());
+    }
+};
+
+template<typename IteratorGetter,
+         typename GenerationContainer,
+         typename ObjectContainer>
+decltype(auto) make_zipped(GenerationContainer& gens,
+                           ObjectContainer& objs)
 {
-    using std::swap;
-    swap(*it_a, *it_b);
+    return PERFECT_BACKWARD(
+                boost::make_zip_iterator(
+                    boost::make_tuple(
+                        std::invoke(IteratorGetter{}, gens),
+                        std::invoke(IteratorGetter{}, objs))));
 }
+
+
+template<typename BeginGetter,
+         typename EndGetter,
+         typename GenerationContainer,
+         typename ObjectContainer>
+decltype(auto) make_split_gic_iterator(GenerationContainer& gens,
+                                       ObjectContainer& objs)
+{
+    return PERFECT_BACKWARD(
+        boost::make_transform_iterator<get_object>(
+            boost::make_filter_iterator<valid_generation>(
+                make_zipped<BeginGetter>(gens, objs),
+                make_zipped<EndGetter>(gens, objs))));
+}
+
+template<class GenerationContainer, class ObjectContainer>
+using split_gic_iterator =
+    decltype(make_split_gic_iterator<begin_getter, end_getter>(
+        std::declval<GenerationContainer&>(),
+        std::declval<ObjectContainer&>()));
+
+} // namespace detail
+
+} // end namespace genex
 
 #endif // GIC_ITERATOR_HPP

@@ -53,13 +53,13 @@ public:
     using wrapped_type = manually_destructed<T>;
     using wrapped_object_container = ObjectContainer<wrapped_type>;
 
-    using iterator = embedded_gen_iterator<
-        typename GenerationContainer::iterator,
-        typename wrapped_object_container::iterator>;
-    using const_iterator = embedded_gen_iterator<
-        typename GenerationContainer::const_iterator,
-        typename wrapped_object_container::const_iterator>;
+    using iterator = detail::split_gic_iterator<
+        GenerationContainer,
+        wrapped_object_container>;
 
+    using const_iterator = detail::split_gic_iterator<
+        GenerationContainer const,
+        wrapped_object_container const>;
 
     split_gic() = default;
 
@@ -111,19 +111,15 @@ public:
     }
 
     iterator begin() {
-        return {
-            generations.begin(),
-            generations.end(),
-            objects.begin()
-        };
+        return detail::make_split_gic_iterator<detail::begin_getter,
+                                               detail::end_getter>
+                (generations, objects);
     }
 
     const_iterator cbegin() const {
-        return {
-            generations.cbegin(),
-            generations.cend(),
-            objects.cbegin()
-        };
+        return detail::make_split_gic_iterator<detail::cbegin_getter,
+                                               detail::cend_getter>
+                (generations, objects);
     }
 
     const_iterator begin() const {
@@ -131,19 +127,15 @@ public:
     }
 
     iterator end() {
-        return {
-            generations.end(),
-            generations.end(),
-            objects.end()
-        };
+        return detail::make_split_gic_iterator<detail::end_getter,
+                                               detail::end_getter>
+                (generations, objects);
     }
 
     const_iterator cend() const {
-        return {
-            generations.cend(),
-            generations.cend(),
-            objects.cend()
-        };
+        return detail::make_split_gic_iterator<detail::cend_getter,
+                                               detail::cend_getter>
+                (generations, objects);
     }
 
     const_iterator end() const {

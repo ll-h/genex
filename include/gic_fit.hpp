@@ -13,9 +13,8 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "gic_base.hpp"
+#include "perfect_backward.hpp"
 
-// https://youtu.be/hwT8K3-NH1w
-#define PERFECT_BACKWARD( x ) static_cast<decltype(x)>(x)
 
 namespace genex {
 
