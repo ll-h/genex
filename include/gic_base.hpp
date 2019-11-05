@@ -5,11 +5,12 @@
 
 #include "key.hpp"
 #include "genex_crtp.hpp"
+#include "detail/gic_base_forward_declaration.hpp"
 
 namespace genex {
 
 // Base class for generationally indexed containers
-template<class Derived,
+template<typename Derived,
          typename T,
          typename Key,
          typename GenerationContainer>

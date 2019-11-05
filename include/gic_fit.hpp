@@ -100,13 +100,13 @@ private:
 
     // Main implementation of the iterator.
     // The rest is used to retrieve its types (const and non-const).
-    template <typename Iter>
-    static decltype(auto) make_iterator(Iter start_it, Iter end_it) {
+    template <typename BG, typename EG>
+    decltype(auto) make_iterator(BG&& begin_getter, EG&& end_getter) {
         return PERFECT_BACKWARD(
             boost::make_transform_iterator<slot_unwrapper>(
                 boost::make_filter_iterator<is_slot_occupied>(
-                    start_it,
-                    end_it)));
+                    begin_getter(objects),
+                    end_getter(objects))));
     }
 
     template <typename Iter>
