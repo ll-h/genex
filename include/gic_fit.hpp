@@ -12,6 +12,7 @@
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include "detail/gic_core_access.hpp"
 #include "gic_base.hpp"
 #include "perfect_backward.hpp"
 
@@ -98,15 +99,25 @@ private:
         }
     };
 
+    friend class detail::gic_core_access;
+
+    template<typename Self>
+    static constexpr bool is_self = std::is_same_v<gic_fit,
+            std::remove_cv_t<std::remove_reference_t<Self> > >;
+
     // Main implementation of the iterator.
     // The rest is used to retrieve its types (const and non-const).
-    template <typename BG, typename EG>
-    decltype(auto) make_iterator(BG&& begin_getter, EG&& end_getter) {
+    template <typename Self,
+              typename BG,
+              typename EG,
+              typename = std::enable_if_t<is_self<Self>>>
+    static decltype(auto)
+    make_iterator(Self &self, BG&& begin_getter, EG&& end_getter) {
         return PERFECT_BACKWARD(
             boost::make_transform_iterator<slot_unwrapper>(
                 boost::make_filter_iterator<is_slot_occupied>(
-                    begin_getter(objects),
-                    end_getter(objects))));
+                    begin_getter(self.objects),
+                    end_getter(self.objects))));
     }
 
     template <typename Iter>
