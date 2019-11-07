@@ -6,6 +6,9 @@
 #include "key.hpp"
 #include "genex_crtp.hpp"
 #include "detail/gic_base_forward_declaration.hpp"
+#include "detail/gic_core_access.hpp"
+#include "detail/iterator_utils.hpp"
+#include "perfect_backward.hpp"
 
 namespace genex {
 
@@ -56,6 +59,43 @@ public:
         return nullptr;
     }
 
+
+    decltype(auto) begin() {
+        return PERFECT_BACKWARD(
+            detail::gic_core_access::make_iterator(this->as_derived(),
+                                                   detail::begin_getter_v,
+                                                   detail::end_getter_v));
+    }
+
+    decltype(auto) cbegin() const {
+        return PERFECT_BACKWARD(
+            detail::gic_core_access::make_iterator(this->as_derived(),
+                                                   detail::cbegin_getter_v,
+                                                   detail::cend_getter_v));
+    }
+
+    decltype(auto) begin() const {
+        return PERFECT_BACKWARD(cbegin());
+    }
+
+    decltype(auto) end() {
+        return PERFECT_BACKWARD(
+            detail::gic_core_access::make_iterator(this->as_derived(),
+                                                   detail::end_getter_v,
+                                                   detail::end_getter_v));
+    }
+
+    decltype(auto) cend() const {
+        return PERFECT_BACKWARD(
+            detail::gic_core_access::make_iterator(this->as_derived(),
+                                                   detail::cend_getter_v,
+                                                   detail::cend_getter_v));
+    }
+
+    decltype(auto) end() const {
+        return PERFECT_BACKWARD(cend());
+    }
+
 protected:
     gic_base() = default;
 
@@ -67,12 +107,13 @@ private:
     // the logic of this function only once instead of once for const
     // this and once for non-const this
     template<class Self>
-    friend decltype(auto) internal_get(
+    static decltype(auto) internal_get(
             Self&& self,
             key_type const & k)
     {
         if(self.as_derived().is_present(k)) {
-            return self.as_derived().unchecked_get(k.get_index());
+            return detail::gic_core_access::unchecked_get(self.as_derived(),
+                                                          k.get_index());
         }
 
         return self.failed_get();

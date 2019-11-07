@@ -12,12 +12,18 @@ struct begin_getter {
     }
 };
 
+constexpr begin_getter begin_getter_v;
+
+
 struct cbegin_getter {
     template<typename Container>
     decltype(auto) operator()(Container& cont) const {
         return PERFECT_BACKWARD(cont.cbegin());
     }
 };
+
+constexpr cbegin_getter cbegin_getter_v;
+
 
 struct end_getter {
     template<typename Container>
@@ -26,12 +32,18 @@ struct end_getter {
     }
 };
 
+constexpr end_getter end_getter_v;
+
+
 struct cend_getter {
     template<typename Container>
     decltype(auto) operator()(Container& cont) const {
         return PERFECT_BACKWARD(cont.cend());
     }
 };
+
+constexpr cend_getter cend_getter_v;
+
 
 } // end namespace genex::detail
 

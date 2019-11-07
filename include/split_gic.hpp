@@ -14,6 +14,7 @@
 #include "manually_destructed.hpp"
 #include "element_validity_embedded_in_generation.hpp"
 #include "split_gic_iterator.hpp"
+#include "perfect_backward.hpp"
 
 namespace genex {
 
@@ -110,46 +111,6 @@ public:
         }
     }
 
-    iterator begin() {
-        return detail::make_split_gic_iterator<detail::begin_getter,
-                                               detail::end_getter>
-                (generations, objects);
-    }
-
-    const_iterator cbegin() const {
-        return detail::make_split_gic_iterator<detail::cbegin_getter,
-                                               detail::cend_getter>
-                (generations, objects);
-    }
-
-    const_iterator begin() const {
-        return cbegin();
-    }
-
-    iterator end() {
-        return detail::make_split_gic_iterator<detail::end_getter,
-                                               detail::end_getter>
-                (generations, objects);
-    }
-
-    const_iterator cend() const {
-        return detail::make_split_gic_iterator<detail::cend_getter,
-                                               detail::cend_getter>
-                (generations, objects);
-    }
-
-    const_iterator end() const {
-        return cend();
-    }
-
-    decltype(auto) unchecked_get(index_type const& idx) {
-        return objects[idx].get_pointer();
-    }
-
-    decltype(auto) unchecked_get(index_type const& idx) const {
-        return objects[idx].get_pointer();
-    }
-
 private:
     ObjectContainer<wrapped_type> objects;
     IndexContainer free_indexes;
@@ -158,6 +119,26 @@ private:
         ++generations[idx];
         objects[idx].erase();
         free_indexes.push_back(idx);
+    }
+
+
+    friend class detail::gic_core_access;
+
+    template<class Self>
+    static decltype(auto) unchecked_get(Self& self, index_type const& idx) {
+        return PERFECT_BACKWARD(self.objects[idx].get_pointer());
+    }
+
+    // Main implementation of the iterator.
+    // The rest is used to retrieve its types (const and non-const).
+    template <typename Self, typename BG, typename EG>
+    static decltype(auto)
+    make_iterator(Self& self, BG&& begin_getter, EG&& end_getter) {
+        return PERFECT_BACKWARD(
+            detail::make_split_gic_iterator(self.generations,
+                                            self.objects,
+                                            begin_getter,
+                                            end_getter));
     }
 };
 

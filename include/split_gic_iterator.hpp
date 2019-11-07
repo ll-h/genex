@@ -55,7 +55,9 @@ template<typename BeginGetter,
          typename GenerationContainer,
          typename ObjectContainer>
 decltype(auto) make_split_gic_iterator(GenerationContainer& gens,
-                                       ObjectContainer& objs)
+                                       ObjectContainer& objs,
+                                       BeginGetter&& = BeginGetter{},
+                                       EndGetter&& = EndGetter{})
 {
     return PERFECT_BACKWARD(
         boost::make_transform_iterator<get_object>(
