@@ -8,10 +8,9 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include "element_validity_embedded_in_generation.hpp"
 #include "perfect_backward.hpp"
+#include "detail/iterator_utils.hpp"
 
-namespace genex {
-
-namespace detail {
+namespace genex::detail {
 
 // The iterator will be constructed as follows :
 //     zip(generation_iterator, object_iterator)
@@ -37,35 +36,6 @@ struct get_object {
     }
 };
 
-
-struct begin_getter {
-    template<typename Container>
-    decltype(auto) operator()(Container& cont) const {
-        return PERFECT_BACKWARD(cont.begin());
-    }
-};
-
-struct cbegin_getter {
-    template<typename Container>
-    decltype(auto) operator()(Container& cont) const {
-        return PERFECT_BACKWARD(cont.cbegin());
-    }
-};
-
-struct end_getter {
-    template<typename Container>
-    decltype(auto) operator()(Container& cont) const {
-        return PERFECT_BACKWARD(cont.end());
-    }
-};
-
-struct cend_getter {
-    template<typename Container>
-    decltype(auto) operator()(Container& cont) const {
-        return PERFECT_BACKWARD(cont.cend());
-    }
-};
-
 template<typename IteratorGetter,
          typename GenerationContainer,
          typename ObjectContainer>
@@ -85,7 +55,9 @@ template<typename BeginGetter,
          typename GenerationContainer,
          typename ObjectContainer>
 decltype(auto) make_split_gic_iterator(GenerationContainer& gens,
-                                       ObjectContainer& objs)
+                                       ObjectContainer& objs,
+                                       BeginGetter&& = BeginGetter{},
+                                       EndGetter&& = EndGetter{})
 {
     return PERFECT_BACKWARD(
         boost::make_transform_iterator<get_object>(
@@ -100,8 +72,6 @@ using split_gic_iterator =
         std::declval<GenerationContainer&>(),
         std::declval<ObjectContainer&>()));
 
-} // namespace detail
-
-} // end namespace genex
+} // namespace genex::detail
 
 #endif // GIC_ITERATOR_HPP

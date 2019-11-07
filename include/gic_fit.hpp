@@ -12,6 +12,7 @@
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include "detail/gic_core_access.hpp"
 #include "gic_base.hpp"
 #include "perfect_backward.hpp"
 
@@ -76,6 +77,16 @@ private:
         ++number_of_free_elements;
     }
 
+    // ===== CRTP overrides =====
+
+    friend class detail::gic_core_access;
+
+    template<class Self>
+    static decltype(auto) unchecked_get(Self& self, index_type const& idx) {
+        return PERFECT_BACKWARD(
+                    std::addressof(std::get<1>(self.objects[idx])));
+    }
+
 
     // ===== Iterator ====
 
@@ -100,60 +111,43 @@ private:
 
     // Main implementation of the iterator.
     // The rest is used to retrieve its types (const and non-const).
-    template <typename Iter>
-    static decltype(auto) make_iterator(Iter start_it, Iter end_it) {
+    template <typename ObjCont, typename BG, typename EG>
+    static decltype(auto)
+    make_gic_fit_iterator(ObjCont& container,
+                          BG begin_getter,
+                          EG end_getter)
+    {
         return PERFECT_BACKWARD(
             boost::make_transform_iterator<slot_unwrapper>(
                 boost::make_filter_iterator<is_slot_occupied>(
-                    start_it,
-                    end_it)));
+                    begin_getter(container),
+                    end_getter(container))));
     }
 
-    template <typename Iter>
-    static decltype(auto) make_end_iterator(Iter end_it) {
-        return PERFECT_BACKWARD(make_iterator(end_it, end_it));
+    template <typename Self, typename BG, typename EG>
+    static decltype(auto)
+    make_iterator(Self& self, BG begin_getter, EG end_getter) {
+        return PERFECT_BACKWARD(
+            make_gic_fit_iterator(self.objects,
+                                  begin_getter,
+                                  end_getter));
     }
 
     template<bool IsConst>
     using conditionally_const_base_iterator = std::conditional_t<
         IsConst,
-        typename wrapped_object_container::const_iterator,
-        typename wrapped_object_container::iterator
-    >;
+        const wrapped_object_container,
+        wrapped_object_container>;
 
     template<bool IsConst>
-    using conditionally_const_iterator = decltype(make_end_iterator(
-        std::declval<conditionally_const_base_iterator<IsConst>>()));
+    using conditionally_const_iterator = decltype(make_gic_fit_iterator(
+        std::declval<conditionally_const_base_iterator<IsConst>&>(),
+        detail::begin_getter_v,
+        detail::end_getter_v));
 
 public:
     using iterator = conditionally_const_iterator<false>;
     using const_iterator = conditionally_const_iterator<true>;
-
-    iterator begin() {
-        return make_iterator(objects.begin(),
-                             objects.end());
-    }
-
-    const_iterator cbegin() const {
-        return make_iterator(objects.cbegin(),
-                             objects.cend());
-    }
-
-    const_iterator begin() const {
-        return cbegin();
-    }
-
-    iterator end() {
-        return make_end_iterator(objects.end());
-    }
-
-    const_iterator cend() const {
-        return make_end_iterator(objects.cend());
-    }
-
-    const_iterator end() const {
-        return cend();
-    }
 
 
     // ===== Core functionalities =====
@@ -195,17 +189,6 @@ public:
             auto idx = k.get_index();
             unchecked_erasure(std::forward<index_type>(idx));
         }
-    }
-
-
-    // ===== CRTP overrides =====
-
-    decltype(auto) unchecked_get(index_type const& idx) {
-        return std::addressof(std::get<1>(objects[idx]));
-    }
-
-    decltype(auto) unchecked_get(index_type const& idx) const {
-        return std::addressof(std::get<1>(objects[idx]));
     }
 };
 
