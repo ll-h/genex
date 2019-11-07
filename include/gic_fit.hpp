@@ -101,16 +101,9 @@ private:
 
     friend class detail::gic_core_access;
 
-    template<typename Self>
-    static constexpr bool is_self = std::is_same_v<gic_fit,
-            std::remove_cv_t<std::remove_reference_t<Self> > >;
-
     // Main implementation of the iterator.
     // The rest is used to retrieve its types (const and non-const).
-    template <typename Self,
-              typename BG,
-              typename EG,
-              typename = std::enable_if_t<is_self<Self>>>
+    template <typename Self, typename BG, typename EG>
     static decltype(auto)
     make_iterator(Self &self, BG&& begin_getter, EG&& end_getter) {
         return PERFECT_BACKWARD(
