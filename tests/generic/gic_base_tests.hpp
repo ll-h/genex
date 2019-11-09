@@ -6,31 +6,24 @@
 #include "../zero_on_destruction.hpp"
 using namespace boost::unit_test;
 
-BOOST_AUTO_TEST_CASE( emplace_get ) {
-    gic_derived<int> container;
 
-    auto key = container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( emplace_get, GicWithOneElementFixture ) {
     gic_derived<int>::element_access_type maybe_val = container.get(key);
 
     BOOST_TEST(maybe_val != container.failed_get());
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( emplace_brackets_get ) {
-    gic_derived<int> container;
-
-    auto key = container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( emplace_brackets_get, GicWithOneElementFixture ) {
     auto maybe_val = container[key];
 
     BOOST_TEST(maybe_val != container.failed_get());
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( get_const ) {
-    gic_derived<int> container;
+BOOST_FIXTURE_TEST_CASE( get_const, GicWithOneElementFixture ) {
     gic_derived<int> const &container_const_ref = container;
 
-    auto key = container.emplace(NON_ZERO_VAL);
     gic_derived<int>::element_const_access_type maybe_val =
             container_const_ref.get(key);
 
@@ -38,19 +31,14 @@ BOOST_AUTO_TEST_CASE( get_const ) {
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( remove_get ) {
-    gic_derived<int> container;
-
-    auto key = container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( remove_get, GicWithOneElementFixture ) {
     container.remove(key);
     auto maybe_val = container[key];
 
     BOOST_TEST(maybe_val == container.failed_get());
 }
 
-BOOST_AUTO_TEST_CASE( remove_old_key ) {
-    gic_derived<int> container;
-
+BOOST_FIXTURE_TEST_CASE( remove_old_key, GicFixture ) {
     auto old_key = container.emplace(NON_ZERO_VAL_1);
     container.remove(old_key);
     auto new_key = container.emplace(NON_ZERO_VAL_2);
@@ -61,9 +49,7 @@ BOOST_AUTO_TEST_CASE( remove_old_key ) {
     BOOST_TEST(*maybe_val == NON_ZERO_VAL_2);
 }
 
-BOOST_AUTO_TEST_CASE( get_old_key ) {
-    gic_derived<int> container;
-
+BOOST_FIXTURE_TEST_CASE( get_old_key, GicFixture ) {
     auto old_key = container.emplace(NON_ZERO_VAL_1);
     container.remove(old_key);
     auto new_key = container.emplace(NON_ZERO_VAL_2);

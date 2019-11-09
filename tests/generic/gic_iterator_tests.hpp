@@ -11,36 +11,22 @@ using namespace boost::unit_test;
 
 // ===== Iterator concept =====
 
-BOOST_AUTO_TEST_CASE( deref_first_allocated ) {
-    gic_derived<int> container;
-
-    (void)container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( deref_first_allocated, GicWithOneElementFixture ) {
     auto it = container.begin();
-
     BOOST_TEST(*it == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( deref_implicit_const ) {
-    gic_derived<int> container;
-
-    (void)container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( deref_implicit_const, GicWithOneElementFixture ) {
     auto it = std::as_const(container).begin();
-
     BOOST_TEST(*it == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( deref_explicit_const ) {
-    gic_derived<int> container;
-
-    (void)container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( deref_explicit_const, GicWithOneElementFixture ) {
     auto it = container.cbegin();
-
     BOOST_TEST(*it == NON_ZERO_VAL);
 }
 
-BOOST_AUTO_TEST_CASE( deref_first_free ) {
-    gic_derived<int> container;
-
+BOOST_FIXTURE_TEST_CASE( deref_first_free, GicFixture ) {
     auto free_key = container.emplace(NON_ZERO_VAL_1);
     (void)container.emplace(NON_ZERO_VAL_2);
     container.remove(free_key);
@@ -49,9 +35,7 @@ BOOST_AUTO_TEST_CASE( deref_first_free ) {
     BOOST_TEST(*it == NON_ZERO_VAL_2);
 }
 
-BOOST_AUTO_TEST_CASE( iter_swap ) {
-    gic_derived<int> container;
-
+BOOST_FIXTURE_TEST_CASE( iter_swap, GicFixture ) {
     auto key_a = container.emplace(NON_ZERO_VAL_1);
     auto key_b = container.emplace(NON_ZERO_VAL_2);
 
@@ -74,8 +58,7 @@ BOOST_AUTO_TEST_CASE( iter_swap ) {
 #define ASSERT_TRUE(x) BOOST_TEST(!!(x))
 #endif
 
-BOOST_AUTO_TEST_CASE( iterator_equality_on_empty ) {
-    gic_derived<int> container;
+BOOST_FIXTURE_TEST_CASE( iterator_equality_on_empty, GicFixture ) {
     ASSERT_TRUE(container.begin() == container.end());
     ASSERT_TRUE(container.cbegin() == container.cend());
     ASSERT_TRUE(container.cend() == container.begin());
@@ -87,27 +70,21 @@ BOOST_AUTO_TEST_CASE( iterator_equality_on_empty ) {
     ASSERT_TRUE(cc.begin() == cc.end());
 }
 
-BOOST_AUTO_TEST_CASE( iterator_inequality ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
+BOOST_FIXTURE_TEST_CASE( iterator_inequality, GicWithOneElementFixture ) {
     ASSERT_TRUE(container.begin() != container.end());
     ASSERT_TRUE(container.cbegin() != container.cend());
 }
 
-BOOST_AUTO_TEST_CASE( iterator_incr_to_end ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
-
+BOOST_FIXTURE_TEST_CASE( iterator_incr_to_end, GicWithOneElementFixture ) {
     auto it = container.cbegin();
     ASSERT_TRUE(it != container.cend());
     ++it;
     ASSERT_TRUE(it == container.cend());
 }
 
-BOOST_AUTO_TEST_CASE( iterator_incr_skips_free ) {
-    gic_derived<int> container;
+BOOST_FIXTURE_TEST_CASE( iterator_incr_skips_free, GicFixture ) {
     (void)container.emplace(NON_ZERO_VAL_1);
-    auto free_key = container.emplace(NON_ZERO_VAL_1);
+    auto free_key = container.emplace(NON_ZERO_VAL);
     (void)container.emplace(NON_ZERO_VAL_2);
     container.remove(free_key);
 
@@ -127,9 +104,7 @@ template<typename T>
 constexpr bool is_iter_writeable =
         std::is_assignable_v<decltype(*std::declval<T>()), int>;
 
-BOOST_AUTO_TEST_CASE( iterator_write ) {
-    gic_derived<int> container;
-    auto key = container.emplace(NON_ZERO_VAL_1);
+BOOST_FIXTURE_TEST_CASE( iterator_write, GicWithOneElementFixture ) {
     auto it = container.begin();
     static_assert (is_iter_writeable<decltype(it)>);
 
@@ -137,8 +112,7 @@ BOOST_AUTO_TEST_CASE( iterator_write ) {
     ASSERT_TRUE(*container[key] == NON_ZERO_VAL_2);
 }
 
-BOOST_AUTO_TEST_CASE( const_iterator_is_not_writable ) {
-    gic_derived<int> container;
+BOOST_FIXTURE_TEST_CASE( const_iterator_is_not_writable, GicFixture ) {
     auto const& cc = container;
     static_assert (!is_iter_writeable<decltype(container.cbegin())>);
     static_assert (!is_iter_writeable<decltype(cc.begin())>);
@@ -147,9 +121,7 @@ BOOST_AUTO_TEST_CASE( const_iterator_is_not_writable ) {
 
 // ===== Forward Iterator concept =====
 
-BOOST_AUTO_TEST_CASE( iterator_singularity ) {
-    gic_derived<int> container;
-
+BOOST_FIXTURE_TEST_CASE( iterator_singularity, GicFixture ) {
     using iter_t = decltype(container)::iterator;
     using const_iter_t = decltype(container)::const_iterator;
 
@@ -193,10 +165,7 @@ BOOST_AUTO_TEST_CASE( iterator_deref_types ) {
     static_assert(are_forward_iter_type_requirements_ok<citer>);
 }
 
-BOOST_AUTO_TEST_CASE( iterator_multipass_equality ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
-
+BOOST_FIXTURE_TEST_CASE( iterator_multipass_equality, GicWithOneElementFixture ) {
     auto ita = container.begin();
     auto itb = container.begin();
 
@@ -206,10 +175,9 @@ BOOST_AUTO_TEST_CASE( iterator_multipass_equality ) {
     ASSERT_TRUE(++ita == ++itb);
 }
 
-BOOST_AUTO_TEST_CASE( iterator_multipass_untied_copy ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
-
+BOOST_FIXTURE_TEST_CASE( iterator_multipass_untied_copy,
+                         GicWithOneElementFixture )
+{
     auto ita = container.begin();
     auto itb = ita;
     ++itb;
@@ -219,10 +187,7 @@ BOOST_AUTO_TEST_CASE( iterator_multipass_untied_copy ) {
 
 // ===== Bidirectional Iterator concept =====
 
-BOOST_AUTO_TEST_CASE( iterator_pre_decrement ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
-
+BOOST_FIXTURE_TEST_CASE( iterator_pre_decrement, GicWithOneElementFixture ) {
     auto it = container.begin();
     ++it;
 
@@ -232,10 +197,7 @@ BOOST_AUTO_TEST_CASE( iterator_pre_decrement ) {
     BOOST_TEST(&decremented == &it);
 }
 
-BOOST_AUTO_TEST_CASE( iterator_post_decrement ) {
-    gic_derived<int> container;
-    (void)container.emplace(NON_ZERO_VAL);
-
+BOOST_FIXTURE_TEST_CASE( iterator_post_decrement, GicWithOneElementFixture ) {
     auto it = container.begin();
     ++it;
 

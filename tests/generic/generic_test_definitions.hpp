@@ -14,4 +14,19 @@ constexpr int
     NON_ZERO_VAL_1 = NON_ZERO_VAL,
     NON_ZERO_VAL_2 = 5555;
 
+
+struct GicFixture {
+    gic_derived<int> container;
+};
+
+struct GicWithOneElementFixture : GicFixture {
+    using key_type = decltype(container)::key_type;
+    key_type const key;
+
+    GicWithOneElementFixture()
+        : GicFixture(),
+          key(container.emplace(NON_ZERO_VAL))
+    {}
+};
+
 #endif // GENERIC_TEST_DEFINITIONS_HPP
