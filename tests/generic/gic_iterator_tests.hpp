@@ -113,6 +113,7 @@ BOOST_AUTO_TEST_CASE( iterator_incr_skips_free ) {
 
     auto it = container.cbegin();
     ASSERT_TRUE(it != container.cend());
+
     BOOST_TEST(*it++ == NON_ZERO_VAL_1);
 
     ASSERT_TRUE(it != container.cend());
@@ -146,11 +147,106 @@ BOOST_AUTO_TEST_CASE( const_iterator_is_not_writable ) {
 
 // ===== Forward Iterator concept =====
 
-BOOST_AUTO_TEST_CASE( iterator_default_construction ) {
+BOOST_AUTO_TEST_CASE( iterator_singularity ) {
     gic_derived<int> container;
 
     using iter_t = decltype(container)::iterator;
     using const_iter_t = decltype(container)::const_iterator;
+
+    // also checks default-constructibility
     ASSERT_TRUE(iter_t{} == container.end());
     ASSERT_TRUE(const_iter_t{} == container.cend());
 }
+
+
+template<typename Iter,
+         // type aliases :
+         typename ValType = typename std::iterator_traits<Iter>::value_type,
+         typename RefType = typename std::iterator_traits<Iter>::reference>
+using forward_iter_type_requirements = std::conjunction<
+    std::is_same<
+        RefType,
+        std::conditional_t<
+            is_iter_writeable<Iter>,
+            ValType&,
+            ValType const&
+        >
+    >,
+    std::is_same<
+        decltype(std::declval<Iter&>()++),
+        Iter>,
+    std::is_same<
+        decltype(*std::declval<Iter&>()++),
+        RefType
+    >
+>;
+
+template<typename Iter>
+constexpr bool are_forward_iter_type_requirements_ok =
+        forward_iter_type_requirements<Iter>::value;
+
+BOOST_AUTO_TEST_CASE( iterator_deref_types ) {
+    using iter = gic_derived<int>::iterator;
+    using citer = gic_derived<int>::const_iterator;
+
+    static_assert(are_forward_iter_type_requirements_ok<iter>);
+    static_assert(are_forward_iter_type_requirements_ok<citer>);
+}
+
+BOOST_AUTO_TEST_CASE( iterator_multipass_equality ) {
+    gic_derived<int> container;
+    (void)container.emplace(NON_ZERO_VAL);
+
+    auto ita = container.begin();
+    auto itb = container.begin();
+
+    ASSERT_TRUE(ita == itb);
+    BOOST_TEST(std::addressof(*ita) == std::addressof(*itb));
+    ASSERT_TRUE(++ita == ++itb);
+    ASSERT_TRUE(++ita == ++itb);
+}
+
+BOOST_AUTO_TEST_CASE( iterator_multipass_untied_copy ) {
+    gic_derived<int> container;
+    (void)container.emplace(NON_ZERO_VAL);
+
+    auto ita = container.begin();
+    auto itb = ita;
+    ++itb;
+    BOOST_TEST(*ita == NON_ZERO_VAL);
+}
+
+
+// ===== Bidirectional Iterator concept =====
+
+BOOST_AUTO_TEST_CASE( iterator_pre_decrement ) {
+    gic_derived<int> container;
+    (void)container.emplace(NON_ZERO_VAL);
+
+    auto it = container.begin();
+    ++it;
+
+    std::add_lvalue_reference_t<decltype(it)> decremented = --it;
+    BOOST_TEST(*decremented == NON_ZERO_VAL);
+    ASSERT_TRUE(--(++decremented) == decremented);
+    BOOST_TEST(&decremented == &it);
+}
+
+BOOST_AUTO_TEST_CASE( iterator_post_decrement ) {
+    gic_derived<int> container;
+    (void)container.emplace(NON_ZERO_VAL);
+
+    auto it = container.begin();
+    ++it;
+
+    static_assert(std::is_same_v<
+        decltype(*it--),
+        std::iterator_traits<decltype(it)>::reference>);
+
+    auto it_copy = it;
+    ASSERT_TRUE(it_copy == it--);
+    BOOST_TEST(*it == NON_ZERO_VAL);
+}
+
+
+// GIC iterators cannot be random-access-iterators
