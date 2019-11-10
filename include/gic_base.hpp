@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include <boost/optional.hpp>
+
 #include "key.hpp"
 #include "detail/genex_crtp.hpp"
 #include "detail/gic_base_forward_declaration.hpp"
@@ -23,8 +25,8 @@ public:
     static_assert (is_tagged_key_v<key_type, value_type>);
 
     using generation_type = typename key_type::generation_type;
-    using element_access_type = value_type*;
-    using element_const_access_type = value_type const *;
+    using element_access_type = boost::optional<value_type&>;
+    using element_const_access_type = boost::optional<value_type const&>;
 
     [[nodiscard]] element_access_type
     get(key_type const & k) {
@@ -47,11 +49,11 @@ public:
     }
 
     [[nodiscard]] element_access_type failed_get() {
-        return nullptr;
+        return {};
     }
 
     [[nodiscard]] element_const_access_type failed_get() const {
-        return nullptr;
+        return {};
     }
 
 
@@ -96,6 +98,11 @@ protected:
 
 private:
 
+    template<typename V>
+    static boost::optional<V&> make_optional_ref(V* ptr) {
+        return {*ptr};
+    }
+
     // This is clearly overkill, I just wanted to see if I could write
     // the logic of this function only once instead of once for const
     // this and once for non-const this
@@ -105,8 +112,10 @@ private:
             key_type const & k)
     {
         if(self.as_derived().is_present(k)) {
-            return detail::gic_core_access::unchecked_get(self.as_derived(),
-                                                          k.get_index());
+            return make_optional_ref(
+                        detail::gic_core_access::unchecked_get(
+                            self.as_derived(),
+                            k.get_index()));
         }
 
         return self.failed_get();

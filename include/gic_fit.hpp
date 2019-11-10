@@ -135,14 +135,14 @@ private:
     }
 
     template<bool IsConst>
-    using conditionally_const_base_iterator = std::conditional_t<
+    using conditionally_const_container = std::conditional_t<
         IsConst,
         const wrapped_object_container,
         wrapped_object_container>;
 
     template<bool IsConst>
     using conditionally_const_iterator = decltype(make_gic_fit_iterator(
-        std::declval<conditionally_const_base_iterator<IsConst>&>(),
+        std::declval<conditionally_const_container<IsConst>&>(),
         detail::begin_getter_v,
         detail::end_getter_v));
 

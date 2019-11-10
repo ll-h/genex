@@ -10,14 +10,15 @@ using namespace boost::unit_test;
 BOOST_FIXTURE_TEST_CASE( emplace_get, GicWithOneElementFixture ) {
     gic_derived<int>::element_access_type maybe_val = container.get(key);
 
-    BOOST_TEST(maybe_val != container.failed_get());
+    // Boost.Test tries to print maybe_val without the extra pair of parenthesis
+    BOOST_TEST((maybe_val != container.failed_get()));
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
 BOOST_FIXTURE_TEST_CASE( emplace_brackets_get, GicWithOneElementFixture ) {
     auto maybe_val = container[key];
 
-    BOOST_TEST(maybe_val != container.failed_get());
+    BOOST_TEST((maybe_val != container.failed_get()));
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
@@ -27,7 +28,7 @@ BOOST_FIXTURE_TEST_CASE( get_const, GicWithOneElementFixture ) {
     gic_derived<int>::element_const_access_type maybe_val =
             container_const_ref.get(key);
 
-    BOOST_TEST(maybe_val != container_const_ref.failed_get());
+    BOOST_TEST((maybe_val != container_const_ref.failed_get()));
     BOOST_TEST(*maybe_val == NON_ZERO_VAL);
 }
 
@@ -35,7 +36,7 @@ BOOST_FIXTURE_TEST_CASE( remove_get, GicWithOneElementFixture ) {
     container.remove(key);
     auto maybe_val = container[key];
 
-    BOOST_TEST(maybe_val == container.failed_get());
+    BOOST_TEST((maybe_val == container.failed_get()));
 }
 
 BOOST_FIXTURE_TEST_CASE( remove_old_key, GicFixture ) {
@@ -45,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE( remove_old_key, GicFixture ) {
     container.remove(old_key); // should have no effect
     auto maybe_val = container[new_key];
 
-    BOOST_TEST(maybe_val != container.failed_get());
+    BOOST_TEST((maybe_val != container.failed_get()));
     BOOST_TEST(*maybe_val == NON_ZERO_VAL_2);
 }
 
@@ -56,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE( get_old_key, GicFixture ) {
     (void)new_key;
     auto maybe_val = container[old_key];
 
-    BOOST_TEST(maybe_val == container.failed_get());
+    BOOST_TEST((maybe_val == container.failed_get()));
 }
 
 BOOST_AUTO_TEST_CASE( destruction_on_raii ) {
