@@ -5,8 +5,7 @@ namespace genex {
 
 template<typename Derived,
          typename T,
-         typename Key,
-         typename GenerationContainer>
+         typename Key>
 class gic_base;
 
 } // end genex

@@ -9,7 +9,7 @@
 #include <iterator>
 #include <type_traits>
 
-#include "gic_base.hpp"
+#include "gic_with_generations.hpp"
 #include "key.hpp"
 #include "detail/manually_destructed.hpp"
 #include "detail/element_validity_embedded_in_generation.hpp"
@@ -27,7 +27,7 @@ template<typename T,
          class IndexContainer = std::vector<typename Key::index_type>,
          class GenerationContainer = std::vector<typename Key::generation_type>>
 class split_gic :
-        public gic_base<
+        public gic_with_generations<
             split_gic<
                 T,
                 ObjectContainer,
@@ -40,7 +40,8 @@ class split_gic :
         >
 {
 private:
-    using parent_type = gic_base<split_gic, T, Key, GenerationContainer>;
+    using parent_type =
+        gic_with_generations<split_gic, T, Key, GenerationContainer>;
 
     // without this line, we can only refer to 'generations' with
     // 'this->generations' because the base class is templated.

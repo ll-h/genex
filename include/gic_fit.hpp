@@ -14,7 +14,7 @@
 
 #include "detail/gic_core_access.hpp"
 #include "detail/perfect_backward.hpp"
-#include "gic_base.hpp"
+#include "gic_with_generations.hpp"
 
 
 namespace genex {
@@ -33,7 +33,7 @@ template<typename T,
          class GenerationContainer,
          template<class...> class Variant = std::variant>
 class gic_fit :
-        public gic_base<
+        public gic_with_generations<
             gic_fit<
                 T,
                 ObjectContainer,
@@ -46,7 +46,8 @@ class gic_fit :
         >
 {
 private:
-    using parent_type = gic_base<gic_fit, T, Key, GenerationContainer>;
+    using parent_type =
+        gic_with_generations<gic_fit, T, Key, GenerationContainer>;
 
     // without this line, we can only refer to 'generations' with
     // 'this->generations' because the base class is templated.

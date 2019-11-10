@@ -15,8 +15,7 @@ namespace genex {
 // Base class for generationally indexed containers
 template<typename Derived,
          typename T,
-         typename Key,
-         typename GenerationContainer>
+         typename Key>
 class gic_base : public detail::crtp_base<Derived> {
 public:
     using value_type = T;
@@ -45,10 +44,6 @@ public:
     [[nodiscard]] element_const_access_type
     operator [](key_type const & k) const {
         return get(k);
-    }
-
-    bool is_present(key_type const &k) const {
-        return k.get_generation() == generations[k.get_index()];
     }
 
     [[nodiscard]] element_access_type failed_get() {
@@ -98,8 +93,6 @@ public:
 
 protected:
     gic_base() = default;
-
-    GenerationContainer generations;
 
 private:
 

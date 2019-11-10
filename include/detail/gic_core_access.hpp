@@ -17,8 +17,7 @@ class gic_core_access {
 
     template<typename Derived,
              typename T,
-             typename Key,
-             typename GC>
+             typename Key>
     friend class ::genex::gic_base;
 
 
