@@ -1,7 +1,7 @@
 #ifndef GENEX_CRTP_HPP
 #define GENEX_CRTP_HPP
 
-namespace genex {
+namespace genex::detail {
 
 // https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
 template<class Derived>
@@ -26,6 +26,6 @@ protected:
     }
 };
 
-} // end namespace genex
+} // end namespace genex::detail
 
 #endif // GENEX_CRTP_HPP

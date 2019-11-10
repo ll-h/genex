@@ -5,7 +5,8 @@
 #include <memory>
 #include <type_traits>
 
-namespace genex {
+namespace genex::detail {
+
 
 template<typename T, typename WhenDestroyed = char>
 class manually_destructed {
@@ -71,6 +72,6 @@ private:
     } storage;
 };
 
-} // end namespace genex
+} // end namespace genex::detail
 
 #endif // MANUALLY_DESTRUCTED_HPP

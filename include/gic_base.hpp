@@ -4,11 +4,11 @@
 #include <utility>
 
 #include "key.hpp"
-#include "genex_crtp.hpp"
+#include "detail/genex_crtp.hpp"
 #include "detail/gic_base_forward_declaration.hpp"
 #include "detail/gic_core_access.hpp"
 #include "detail/iterator_utils.hpp"
-#include "perfect_backward.hpp"
+#include "detail/perfect_backward.hpp"
 
 namespace genex {
 
@@ -17,7 +17,7 @@ template<typename Derived,
          typename T,
          typename Key,
          typename GenerationContainer>
-class gic_base : public crtp_base<Derived> {
+class gic_base : public detail::crtp_base<Derived> {
 public:
     using value_type = T;
     using key_type = Key;

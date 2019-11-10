@@ -13,8 +13,8 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "detail/gic_core_access.hpp"
+#include "detail/perfect_backward.hpp"
 #include "gic_base.hpp"
-#include "perfect_backward.hpp"
 
 
 namespace genex {

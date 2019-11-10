@@ -11,10 +11,10 @@
 
 #include "gic_base.hpp"
 #include "key.hpp"
-#include "manually_destructed.hpp"
-#include "element_validity_embedded_in_generation.hpp"
-#include "split_gic_iterator.hpp"
-#include "perfect_backward.hpp"
+#include "detail/manually_destructed.hpp"
+#include "detail/element_validity_embedded_in_generation.hpp"
+#include "detail/split_gic_iterator.hpp"
+#include "detail/perfect_backward.hpp"
 
 namespace genex {
 
@@ -51,7 +51,7 @@ public:
     using index_type = typename key_type::index_type;
     using generation_type = typename key_type::generation_type;
 
-    using wrapped_type = manually_destructed<T>;
+    using wrapped_type = detail::manually_destructed<T>;
     using wrapped_object_container = ObjectContainer<wrapped_type>;
 
     using iterator = detail::split_gic_iterator<
@@ -72,7 +72,7 @@ public:
             gen_it != gen_end;
             ++gen_it, ++obj_it)
         {
-            if(genex::is_valid(*gen_it)) {
+            if(genex::detail::is_valid(*gen_it)) {
                 obj_it->erase();
             }
         }
@@ -106,7 +106,7 @@ public:
     }
 
     void erase(index_type&& index) {
-        if(genex::is_valid(generations[index])) {
+        if(genex::detail::is_valid(generations[index])) {
             unchecked_erasure(std::forward<index_type>(index));
         }
     }

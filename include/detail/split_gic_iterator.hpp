@@ -25,7 +25,8 @@ constexpr int object_tuple_index = 1;
 struct valid_generation {
     template<typename RefPair>
     bool operator()(RefPair&& zipped) const {
-        return genex::is_valid(zipped.template get<generation_tuple_index>());
+        return genex::detail::is_valid(
+                    zipped.template get<generation_tuple_index>());
     }
 };
 
