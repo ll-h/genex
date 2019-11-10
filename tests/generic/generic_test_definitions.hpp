@@ -16,7 +16,9 @@ constexpr int
 
 
 struct GicFixture {
-    gic_derived<int> container;
+    using gic_type = gic_derived<int>;
+
+    gic_type container;
 };
 
 struct GicWithOneElementFixture : GicFixture {

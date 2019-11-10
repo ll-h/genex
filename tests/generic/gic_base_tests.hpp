@@ -8,7 +8,7 @@ using namespace boost::unit_test;
 
 
 BOOST_FIXTURE_TEST_CASE( emplace_get, GicWithOneElementFixture ) {
-    gic_derived<int>::element_access_type maybe_val = container.get(key);
+    gic_type::element_access_type maybe_val = container.get(key);
 
     // Boost.Test tries to print maybe_val without the extra pair of parenthesis
     BOOST_TEST((maybe_val != container.failed_get()));
@@ -23,9 +23,9 @@ BOOST_FIXTURE_TEST_CASE( emplace_brackets_get, GicWithOneElementFixture ) {
 }
 
 BOOST_FIXTURE_TEST_CASE( get_const, GicWithOneElementFixture ) {
-    gic_derived<int> const &container_const_ref = container;
+    gic_type const& container_const_ref = container;
 
-    gic_derived<int>::element_const_access_type maybe_val =
+    gic_type::element_const_access_type maybe_val =
             container_const_ref.get(key);
 
     BOOST_TEST((maybe_val != container_const_ref.failed_get()));
