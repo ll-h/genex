@@ -1,7 +1,7 @@
-#include "genex_crtp.hpp"
+#include "detail/genex_crtp.hpp"
 
 template<class Derived>
-struct base : genex::crtp_base<Derived> {
+struct base : genex::detail::crtp_base<Derived> {
     void call_derived_do_stuff() {
         this->as_derived().Derived::do_stuff();
     }

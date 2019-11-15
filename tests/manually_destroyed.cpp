@@ -2,12 +2,12 @@
 #define BOOST_TEST_DYN_LINK
 #endif
 #include <boost/test/unit_test.hpp>
-#include <manually_destructed.hpp>
+#include <detail/manually_destructed.hpp>
 #include "finally.hpp"
 #include "zero_on_destruction.hpp"
 using namespace boost::unit_test;
 
-using namespace genex;
+using namespace genex::detail;
 
 BOOST_AUTO_TEST_SUITE( manually_destroy )
 
