@@ -15,6 +15,7 @@
 #include "detail/element_validity_embedded_in_generation.hpp"
 #include "detail/split_gic_iterator.hpp"
 #include "detail/perfect_backward.hpp"
+#include "detail/key_placeholding.hpp"
 
 namespace genex {
 
@@ -80,22 +81,23 @@ public:
     }
 
     template<typename... Args>
-    [[nodiscard]] key_type emplace(Args&&... args) {
+    [[nodiscard]] std::pair<key_type, T&> emplace_and_get(Args&&... args) {
         if (free_indexes.empty()) {
-            key_type k{index_type{objects.size()}, generation_type{}};
-            objects.emplace_back(std::forward<Args>(args)...);
-            generations.push_back(k.get_generation());
-            return k;
+            key_type k{index_type{objects.size()},
+                       generations.emplace_back()};
+            auto& slot = objects.emplace_back(
+                        detail::forward_arg_or_key<Args>(args, k)...);
+
+            return {k, *slot};
         }
         else {
             auto idx = free_indexes.back();
-            auto & gen = generations[idx];
-            ++gen;
-            key_type k{idx, gen};
-            objects[idx].emplace(std::forward<Args>(args)...);
             free_indexes.pop_back();
+            key_type k{idx, ++generations[idx]};
+            T& obj = objects[idx].emplace(
+                        detail::forward_arg_or_key<Args>(args, k)...);
 
-            return k;
+            return {k, obj};
         }
     }
 

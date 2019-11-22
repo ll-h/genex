@@ -29,6 +29,8 @@ auto key_requirements() {
     auto public_member_functions = [] (Key const& k) {
         Index const& i = k.get_index();
         Generation const& g = k.get_generation();
+        bool b = k == k;
+        b = k != k;
 
         (void)i;
         (void)g;
@@ -90,6 +92,14 @@ public:
 
     Index const & get_index() const {
         return index;
+    }
+
+    bool operator==(key const& other) const {
+        return (generation == other.generation) && (index == other.index);
+    }
+
+    bool operator!=(key const& other) const {
+        return !(*this == other);
     }
 
 private:

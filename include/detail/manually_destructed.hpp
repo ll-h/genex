@@ -20,8 +20,9 @@ public:
     {}
 
     template<typename... Args>
-    void emplace(Args&&... args) {
-        ::new (&storage.object) T(std::forward<Args>(args)...);
+    T& emplace(Args&&... args) {
+        return *std::launder(
+                    ::new (&storage.object) T(std::forward<Args>(args)...));
     }
 
     void erase() {

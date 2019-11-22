@@ -14,6 +14,7 @@
 
 #include "detail/gic_core_access.hpp"
 #include "detail/perfect_backward.hpp"
+#include "detail/key_placeholding.hpp"
 #include "gic_with_generations.hpp"
 
 
@@ -159,29 +160,31 @@ public:
     // index or object they hold.
 
     template<typename... Args>
-    [[nodiscard]] key_type emplace(Args&&... args) {
+    [[nodiscard]] std::pair<key_type, T&> emplace_and_get(Args&&... args) {
         if (number_of_free_elements != 0) {
             auto idx = free_head;
-            auto & obj = objects[idx];
+            key_type k{idx, ++generations[idx]};
+            auto & slot = objects[idx];
 
             // by construction of this GIC, the variant alternative at free_head
             // is an index, but the call to this will make check regardless.
             // a custom variant with an "unchecked_get" would be preferable.
-            free_head = std::get<0>(obj);
-            obj.template emplace<1>(std::forward<Args>(args)...);
-
+            free_head = std::get<0>(slot);
             --number_of_free_elements;
 
-            auto & gen = generations[idx];
-            ++gen;
-            return {idx, gen};
+            T& emplaced_obj = slot.template emplace<1>(
+                        detail::forward_arg_or_key<Args>(args, k)...);
+
+            return {k, emplaced_obj};
         }
         else {
             key_type k{index_type{objects.size()}, generation_type{}};
-            objects.emplace_back(std::in_place_index<1>,
-                                 std::forward<Args>(args)...);
+            auto& slot = objects.emplace_back(
+                        std::in_place_index<1>,
+                        detail::forward_arg_or_key<Args>(args, k)...);
+
             generations.push_back(k.get_generation());
-            return k;
+            return {k, std::get<1>(slot)};
         }
     }
 

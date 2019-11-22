@@ -2,6 +2,7 @@
 #define GIC_BASE_HPP
 
 #include <utility>
+#include <type_traits>
 
 #include <boost/optional.hpp>
 
@@ -54,6 +55,12 @@ public:
 
     [[nodiscard]] element_const_access_type failed_get() const {
         return {};
+    }
+
+    template<typename... Args>
+    [[nodiscard]] key_type emplace(Args&&... args) {
+        return std::get<0>(this->as_derived().emplace_and_get(
+                               std::forward<Args>(args)...));
     }
 
 

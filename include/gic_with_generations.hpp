@@ -20,6 +20,8 @@ public:
     }
 
 protected:
+    using parent_type = gic_base<Derived, T, Key>;
+
     gic_with_generations() = default;
 
     GenerationContainer generations;
