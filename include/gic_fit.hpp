@@ -85,8 +85,9 @@ private:
 
     template<class Self>
     static decltype(auto) unchecked_get(Self& self, index_type const& idx) {
+        using std::get;
         return PERFECT_BACKWARD(
-                    std::addressof(std::get<1>(self.objects[idx])));
+                    std::addressof(get<1>(self.objects[idx])));
     }
 
 
@@ -102,12 +103,14 @@ private:
 
     // transform
     struct slot_unwrapper {
-        reference operator()(wrapped_type & slot) const {
-            return std::get<1>(slot);
+        reference operator()(wrapped_type& slot) const {
+            using std::get;
+            return get<1>(slot);
         }
 
         const_reference operator()(wrapped_type const& slot) const {
-            return std::get<1>(slot);
+            using std::get;
+            return get<1>(slot);
         }
     };
 
@@ -161,6 +164,8 @@ public:
 
     template<typename... Args>
     [[nodiscard]] std::pair<key_type, T&> emplace_and_get(Args&&... args) {
+        using std::get;
+
         if (number_of_free_elements != 0) {
             auto idx = free_head;
             key_type k{idx, ++generations[idx]};
@@ -169,7 +174,7 @@ public:
             // by construction of this GIC, the variant alternative at free_head
             // is an index, but the call to this will make check regardless.
             // a custom variant with an "unchecked_get" would be preferable.
-            free_head = std::get<0>(slot);
+            free_head = get<0>(slot);
             --number_of_free_elements;
 
             T& emplaced_obj = slot.template emplace<1>(
@@ -184,7 +189,7 @@ public:
                         detail::forward_arg_or_key<Args>(args, k)...);
 
             generations.push_back(k.get_generation());
-            return {k, std::get<1>(slot)};
+            return {k, get<1>(slot)};
         }
     }
 
