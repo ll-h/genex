@@ -9,7 +9,7 @@ Generationally indexed containers are a cache-friendly way of storing objects th
 - [Slotmap](https://github.com/orlp/slotmap) but with C++'s perfect-forwarding
 
 ## Documentation
-The test cases are the perfect user-friendly documentation.
+The test cases are the perfect user-friendly documentation. For single element creation and access you may look at [this file](tests/generic/gic_base_tests.hpp) and for iterations you may look at [this one](tests/generic/gic_iterator_tests.hpp).
 
 ## Installation (Work in progress)
 Copy-paste the content of the _include_ folder where you want to use this library.
